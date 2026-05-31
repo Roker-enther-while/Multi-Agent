@@ -597,3 +597,28 @@
 **Reports Generated:**
 - `reports/real_code_patch_validation.json`
 - `reports/real_code_patch_validation.md`
+
+---
+
+### App Mode Implementation
+
+**Date:** 2026-05-31
+
+**Status:** COMPLETED
+
+**Goal:** Turn the project into a real local web tool.
+
+**Phases Completed:**
+- Phase A: Backend API (Node.js HTTP server with 10 endpoints)
+- Phase B: Model Provider Layer (mock, OpenAI, Anthropic, Gemini, Ollama, LM Studio)
+- Phase C: Chat to Workflow Bridge (POST /api/runs creates workflow)
+- Phase D: Frontend UI (single-page chat interface)
+- Phase E: Real App Demo (DEMO_APP_RESULT.md)
+- Phase F: Final App Audit (docs/app_mode.md, README updated)
+
+**Verification:**
+- `cd src && npm run lint` -> PASS
+- `cd src && npm run build` -> PASS
+- `cd src && npm test` -> PASS, 77/77
+- `node src/dist/evaluation/run_evaluation.js` -> PASS, 5/5
+- Server start + API test -> PASS

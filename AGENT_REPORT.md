@@ -4,42 +4,50 @@
 
 **Date:** 2026-05-31
 
-**Phase:** Real Code Patch Mode
+**Phase:** App Mode Implementation
 
-**Task:** Prove the system can apply real code changes, run tests, review diffs, and produce traceability.
+**Task:** Turn the project into a real local web tool.
 
 ---
 
-### RESULTS:
+### PHASES COMPLETED:
 
-- Scenarios executed: 5/5
-- Scenarios passed: 5/5
-- Average score: 91/100
+**Phase A — Backend API**
+- GET /api/health, GET/POST /api/settings, POST /api/models/test-connection
+- POST /api/runs, GET /api/runs, GET /api/runs/:runId
+- GET /api/runs/:runId/artifacts, GET /api/runs/:runId/artifacts/:name
+- GET /api/runs/:runId/report, POST /api/files/upload
+- Plain Node.js HTTP server, no new dependencies
 
-### SCENARIO DETAILS:
+**Phase B — Model Provider Layer**
+- Mock provider (default, always available)
+- OpenAI-compatible, Anthropic, Gemini, Ollama, LM Studio providers
+- Config via env vars, missing keys don't break mock mode
 
-| ID | Description | Score | Status |
-|---|---|---|---|
-| patch-01 | Add health details function | 85 | PASS |
-| patch-02 | Add email validation | 100 | PASS |
-| patch-03 | Change response format | 100 | PASS |
-| patch-04 | Add error handling | 85 | PASS |
-| patch-05 | Fix bug: health check counter | 85 | PASS |
+**Phase C — Chat to Workflow Bridge**
+- POST /api/runs creates workflow run (already in Phase A)
+- Run status: queued → running → completed/failed/blocked
+- Polling for status updates
 
-### INFRASTRUCTURE CREATED:
+**Phase D — Frontend UI**
+- Single-page chat interface at http://localhost:3456
+- Chat panel, run list sidebar, artifact viewer, report link
+- Settings modal for model configuration
+- Auto-polling for workflow completion
 
-1. **Sample app**: `examples/patch_targets/ts_mini_app/` — real TypeScript app with 7 baseline tests
-2. **Patch scenarios**: `examples/patch_targets/patch_scenarios.json` — 5 deterministic patch definitions
-3. **Patch applicator**: `src/tools/patch_applicator.ts` — string-based patch application and diff generation
-4. **Patch scenario runner**: `src/tools/patch_scenario_runner.ts` — orchestrates patch → build → test → workflow → review
-5. **Patch validation runner**: `src/tools/run_patch_validation.ts` — CLI script to run all scenarios
+**Phase E — Real App Demo**
+- DEMO_APP_RESULT.md created with install/start/demo instructions
+
+**Phase F — Final App Audit**
+- docs/app_mode.md created
+- README updated with app mode section
 
 ### COMMANDS RUN:
 - `cd src && npm run lint` -> PASS
 - `cd src && npm run build` -> PASS
 - `cd src && npm test` -> PASS, 77/77
 - `node src/dist/evaluation/run_evaluation.js` -> PASS, 5/5
-- `node src/dist/tools/run_patch_validation.js` -> PASS, 5/5 (avg 91/100)
+- Server start + API test -> PASS
 
-### REAL CODE PATCH MODE DONE:
-PASS — 5/5 scenarios pass, average score 91/100, no fake passes, main project tests still pass.
+### FINAL APP DONE:
+PASS — Backend API works, frontend UI works, mock provider works, user can run workflow from UI, artifacts visible, report.html accessible, README has commands, DEMO_APP_RESULT.md exists, tests/build pass.

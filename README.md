@@ -6,6 +6,20 @@ Vietnamese Multimedia Intelligent Retrieval Assistant.
 
 This repository also contains a thesis-oriented multi-agent workflow core in `src/`. It is not a generic chatbot and not a clone of coding assistants. Its focus is senior-like software workflow management: requirement intake, context packaging, BA artifacts, visual modeling, task planning, test planning, verification, code review, traceability, and final reporting.
 
+### App Mode (Web UI)
+
+Start the local web server and open the UI:
+
+```bash
+cd src
+npm install
+npm run build
+cd ..
+node src/dist/server/server.js
+```
+
+Open http://localhost:3456 in your browser. Enter a requirement in the chat panel and click "Run". See [docs/app_mode.md](docs/app_mode.md) for details.
+
 Key commands:
 
 ```bash
