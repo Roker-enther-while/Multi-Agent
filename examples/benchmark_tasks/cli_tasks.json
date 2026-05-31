@@ -1,0 +1,34 @@
+[
+  {
+    "id": "cli-01-add-help",
+    "repo": "node_cli_tool",
+    "requirement": "Add a showHelp() function that returns usage string with all available commands.",
+    "expectedArtifacts": ["context_pack", "test_plan"],
+    "testCommand": "npm test",
+    "mode": "plan_only"
+  },
+  {
+    "id": "cli-02-add-version",
+    "repo": "node_cli_tool",
+    "requirement": "Add a getVersion() function that reads version from package.json.",
+    "expectedArtifacts": ["context_pack", "implementation_summary"],
+    "testCommand": "npm test",
+    "mode": "plan_only"
+  },
+  {
+    "id": "cli-03-add-validation",
+    "repo": "node_cli_tool",
+    "requirement": "Add validation to parseArgs() that rejects unknown flags.",
+    "expectedArtifacts": ["context_pack", "test_plan", "code_review_report"],
+    "testCommand": "npm test",
+    "mode": "plan_only"
+  },
+  {
+    "id": "cli-04-add-table-format",
+    "repo": "node_cli_tool",
+    "requirement": "Add 'table' format option to formatOutput() that renders data as ASCII table.",
+    "expectedArtifacts": ["context_pack", "ba_requirement_package", "test_plan"],
+    "testCommand": "npm test",
+    "mode": "plan_only"
+  }
+]

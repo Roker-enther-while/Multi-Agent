@@ -1,0 +1,34 @@
+[
+  {
+    "id": "fastapi-01-add-health-details",
+    "repo": "fastapi_app",
+    "requirement": "Add GET /health/details returning app_name, version, and environment.",
+    "expectedArtifacts": ["context_pack", "ba_requirement_package", "test_plan"],
+    "testCommand": "pytest",
+    "mode": "plan_only"
+  },
+  {
+    "id": "fastapi-02-add-validation",
+    "repo": "fastapi_app",
+    "requirement": "Add input validation to /greet/{name} that rejects empty names.",
+    "expectedArtifacts": ["context_pack", "test_plan"],
+    "testCommand": "pytest",
+    "mode": "plan_only"
+  },
+  {
+    "id": "fastapi-03-add-error-handling",
+    "repo": "fastapi_app",
+    "requirement": "Add structured error handling with proper HTTP status codes.",
+    "expectedArtifacts": ["context_pack", "code_review_report"],
+    "testCommand": "pytest",
+    "mode": "plan_only"
+  },
+  {
+    "id": "fastapi-04-add-endpoint",
+    "repo": "fastapi_app",
+    "requirement": "Add POST /calculate endpoint that accepts {a, b, op} and returns result.",
+    "expectedArtifacts": ["context_pack", "ba_requirement_package", "implementation_summary"],
+    "testCommand": "pytest",
+    "mode": "plan_only"
+  }
+]

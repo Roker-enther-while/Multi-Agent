@@ -1,0 +1,34 @@
+[
+  {
+    "id": "ts-api-01-add-health",
+    "repo": "ts_api_app",
+    "requirement": "Add a getHealth() function that returns status 'ok' and uptime in seconds.",
+    "expectedArtifacts": ["context_pack", "ba_requirement_package", "test_plan", "implementation_summary"],
+    "testCommand": "npm test",
+    "mode": "plan_only"
+  },
+  {
+    "id": "ts-api-02-add-validation",
+    "repo": "ts_api_app",
+    "requirement": "Add validation to greet() that rejects names shorter than 2 characters.",
+    "expectedArtifacts": ["context_pack", "test_plan"],
+    "testCommand": "npm test",
+    "mode": "plan_only"
+  },
+  {
+    "id": "ts-api-03-change-response",
+    "repo": "ts_api_app",
+    "requirement": "Change greet() to return { greeting: string, timestamp: number } instead of { message: string }.",
+    "expectedArtifacts": ["context_pack", "ba_requirement_package"],
+    "testCommand": "npm test",
+    "mode": "plan_only"
+  },
+  {
+    "id": "ts-api-04-add-error-handling",
+    "repo": "ts_api_app",
+    "requirement": "Add error handling to add() that returns error for non-number inputs.",
+    "expectedArtifacts": ["context_pack", "test_plan", "code_review_report"],
+    "testCommand": "npm test",
+    "mode": "plan_only"
+  }
+]
