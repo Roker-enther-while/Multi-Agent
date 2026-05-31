@@ -64,11 +64,25 @@ const WORKFLOW_STEPS: WorkflowAgentStep[] = [
     dependencies: [],
   },
   {
+    id: "ba-requirement-package",
+    phase: "planning",
+    artifactType: "ba_requirement_package",
+    description: "Create BA requirement package.",
+    dependencies: ["context-pack"],
+  },
+  {
+    id: "visual-model-package",
+    phase: "planning",
+    artifactType: "visual_model_package",
+    description: "Create visual model package.",
+    dependencies: ["ba-requirement-package"],
+  },
+  {
     id: "task-plan",
     phase: "planning",
     artifactType: "task_plan",
     description: "Create a task plan from the context pack.",
-    dependencies: ["context-pack"],
+    dependencies: ["visual-model-package"],
   },
   {
     id: "test-plan",
@@ -297,6 +311,8 @@ export class AgentCoordinator {
         codeSummary,
         verificationCommands,
         verificationResults,
+        baRequirementPackagePath: artifactsByType.get("ba_requirement_package")?.path,
+        visualModelPackagePath: artifactsByType.get("visual_model_package")?.path,
         traceabilityReportPath: artifactsByType.get("traceability_report")?.path,
       },
     };

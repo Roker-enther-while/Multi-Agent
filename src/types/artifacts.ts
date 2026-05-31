@@ -139,5 +139,8 @@ export function createArtifactRef(artifact: WorkflowArtifact): ArtifactRef {
  * Used by the artifact store to generate filenames.
  */
 export function artifactTypeToFilename(type: ArtifactType): string {
+  if (type === "ba_requirement_package" || type === "visual_model_package") {
+    return type;
+  }
   return type.replace(/_/g, "-");
 }

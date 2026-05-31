@@ -54,13 +54,15 @@ describe("AgentCoordinator", () => {
     });
 
     assert.equal(result.state.status, "completed");
-    assert.equal(result.agentResults.length, 8);
+    assert.equal(result.agentResults.length, 10);
     assert.equal(result.state.verificationResults.length, 1);
     assert.equal(result.state.verificationResults[0].passed, true);
 
     const artifactTypes = result.artifacts.map((artifact) => artifact.type);
     assert.deepEqual(artifactTypes, [
       "context_pack",
+      "ba_requirement_package",
+      "visual_model_package",
       "task_plan",
       "test_plan",
       "implementation_summary",
@@ -83,6 +85,20 @@ describe("AgentCoordinator", () => {
     assert.ok(finalReport);
     assert.match(readArtifact(codeReview.path), /# Code Review Report/);
     assert.match(readArtifact(finalReport.path), /# Final Report/);
+
+    const baPackage = result.artifacts.find((artifact) => artifact.type === "ba_requirement_package");
+    const visualModel = result.artifacts.find((artifact) => artifact.type === "visual_model_package");
+
+    assert.ok(baPackage);
+    assert.ok(visualModel);
+    assert.match(readArtifact(baPackage.path), /## User Stories/);
+    assert.match(readArtifact(baPackage.path), /## Acceptance Criteria/);
+    assert.match(readArtifact(baPackage.path), /## Flow/);
+    assert.match(readArtifact(baPackage.path), /## API Draft/);
+    assert.match(readArtifact(baPackage.path), /## Data Draft/);
+    assert.match(readArtifact(baPackage.path), /## UI Draft/);
+    assert.match(readArtifact(visualModel.path), /```mermaid/);
+    assert.match(readArtifact(visualModel.path), /## Workflow Diagram/);
   });
 
   it("should block the workflow when verification fails", async () => {

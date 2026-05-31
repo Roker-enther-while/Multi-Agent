@@ -8,6 +8,8 @@ import type { ArtifactType } from "../types/artifacts";
 
 const REQUIRED_TYPES: ArtifactType[] = [
   "context_pack",
+  "ba_requirement_package",
+  "visual_model_package",
   "task_plan",
   "test_plan",
   "implementation_summary",
@@ -56,7 +58,7 @@ describe("buildDemoManifest", () => {
     const manifest = buildDemoManifest(result);
 
     assert.equal(manifest.runId, "demo");
-    assert.equal(manifest.artifactCount, 8);
+    assert.equal(manifest.artifactCount, 10);
     assert.equal(manifest.artifacts.final_report, "/runs/demo/final_report.md");
     assert.equal(manifest.verification.allPassed, true);
     assert.equal(manifest.blockers.count, 0);

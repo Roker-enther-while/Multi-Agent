@@ -4,27 +4,27 @@
 
 **Date:** 2026-05-31
 
-**Phase:** Phase 6 - Input Source Handler
+**Phase:** Phase 7 - BA Artifact and Visual Modeling Integration
 
-**Task:** Support requirement input from text, Markdown file, JSON file, image metadata placeholder, and voice transcript placeholder.
+**Task:** Use BA Artifact and Visual Modeling prompts in the actual workflow.
 
 ---
 
 ### DONE:
-- Created `src/tools/input_source.ts`.
-- Added normalized `RequirementInput` and source types: `text`, `file_markdown`, `file_json`, `image_reference`, `voice_transcript`.
-- Integrated source normalization into the CLI.
-- Added placeholder behavior for image and voice inputs without real OCR/ASR.
-- Added `src/tools/input_source.test.ts`.
-- Added `docs/input_sources.md`.
+- Added deterministic BA artifact agent output.
+- Added deterministic visual modeling agent output.
+- Inserted BA and visual steps into the full workflow before planning.
+- Demo now creates `ba_requirement_package.md` and `visual_model_package.md`.
+- BA package includes user stories, acceptance criteria, flow, API draft, data draft, and UI draft.
+- Visual model package includes Mermaid workflow, state, and data relationship diagrams.
+- Added tests verifying artifacts and required headings.
 
 ### EVIDENCE:
-- Text input normalization: PASS
-- Markdown file input normalization: PASS
-- JSON file input normalization: PASS
-- Custom JSON field support: PASS
-- Image placeholder support: PASS
-- Voice transcript placeholder support: PASS
+- BA package artifact exists: PASS
+- Visual model package artifact exists: PASS
+- Required BA headings exist: PASS
+- Mermaid sections exist: PASS
+- Demo artifact count: 10
 - Tests: 72/72 PASS
 
 ### VERIFICATION:
@@ -32,11 +32,12 @@
 - `cd src && npx tsc -p tsconfig.test.json` -> PASS
 - `cd src && npm test` -> PASS, 72/72 tests
 - `cd src && npm run build` -> PASS
+- `node src/dist/demo/run_demo.js` -> PASS
 
 ### COMMIT:
 ```
-feat: add multi-source requirement input handler
+feat: integrate BA and visual modeling artifacts
 ```
 
 ### NEXT SMALL STEP:
-Phase 7 - BA Artifact and Visual Modeling Integration
+Phase 8 - Human Senior Value Gates

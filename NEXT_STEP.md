@@ -2,23 +2,30 @@
 
 ## Current Actionable Next Step
 
-**Phase:** Phase 7 - BA Artifact and Visual Modeling Integration
+**Phase:** Phase 8 - Human Senior Value Gates
 
 **Priority:** HIGH
 
-**Action:** Use BA Artifact and Visual Modeling prompts in the actual workflow.
+**Action:** Make senior reasoning measurable.
 
 ---
 
 ### Required:
 
-- Add artifacts:
-  - `ba_requirement_package.md`
-  - `visual_model_package.md`
-- Ensure demo run creates them.
-- Include Mermaid sections in visual model artifact.
-- Include user stories, acceptance criteria, flow, API/data/UI draft in BA package.
-- Add tests verifying artifacts exist and include required headings.
+- Add structured gate outputs:
+  - problem framing
+  - scope decision
+  - risk assessment
+  - architecture judgment
+  - priority decision
+  - quality gate
+  - handoff
+- Add score fields:
+  - `traceability_score`
+  - `test_readiness_score`
+  - `scope_risk_score`
+  - `architecture_fit_score`
+- Add tests for gate presence and final report inclusion.
 
 ---
 
@@ -28,10 +35,9 @@
 - `npx tsc -p tsconfig.test.json`
 - `npm test`
 - `npm run build`
-- `node src/dist/demo/run_demo.js`
 
 ---
 
 ### Commit:
 
-`feat: integrate BA and visual modeling artifacts`
+`feat: add senior value gates and scoring`

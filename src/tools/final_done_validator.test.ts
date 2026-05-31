@@ -11,6 +11,8 @@ import type { ArtifactType } from "../types/artifacts";
 
 const REQUIRED_TYPES: ArtifactType[] = [
   "context_pack",
+  "ba_requirement_package",
+  "visual_model_package",
   "task_plan",
   "test_plan",
   "implementation_summary",
