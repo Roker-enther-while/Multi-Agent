@@ -4,34 +4,35 @@
 
 **Date:** 2026-05-31
 
-**Phase:** Phase 2 - Full Agent Implementation
+**Phase:** Phase 3 - End-to-End Demo
 
-**Task:** Implement deterministic logical agents and sequential coordinator wiring for the complete workflow.
+**Task:** Create a repeatable demo that proves the complete requirement-to-report workflow with traceability, verification evidence, and review output.
 
 ---
 
 ### DONE:
-- Created `src/agents/mock_agents.ts` with deterministic agents extending `BaseAgent`.
-- Created `src/orchestrator/agent_coordinator.ts` for sequential agent execution.
-- Created `src/orchestrator/full_workflow_runner.ts` for requirement-to-final-report workflow runs.
-- Exported Phase 2 agents and orchestrator APIs from `src/index.ts`.
-- Added tests for successful full workflow and verification blocker behavior.
-- Ran a sample full workflow into `.ai_runs/phase-2-demo`.
+- Created `src/demo/demo_manifest.ts`.
+- Created `src/demo/run_demo.ts`.
+- Added `src/demo/demo_manifest.test.ts`.
+- Added `docs/e2e_demo.md`.
+- Exported the demo manifest API from `src/index.ts`.
+- Ran the documented demo command from the repository root.
 
 ### EVIDENCE:
-- Agents return structured `AgentRunResult`: PASS
-- Coordinator passes artifact paths between agents: PASS
-- Required artifacts written: context_pack, task_plan, test_plan, implementation_summary, verification_report, code_review_report, traceability_report, final_report
-- Verification results recorded in `ProjectState`: PASS
-- Code review generated: PASS
-- Failed verification creates blocker and stops before review/final report: PASS
-- Tests: 56/56 PASS
+- Single demo command after build: PASS
+- Demo wrote artifacts to `.ai_runs/end-to-end-demo`: PASS
+- Manifest status: `completed`
+- Manifest artifact count: 8
+- Verification: 1 passed, 0 failed
+- Blockers: 0
+- Final prerequisite flags: traceabilityProven, verificationPassed, codeReviewGenerated, finalReportGenerated all true
+- Tests: 57/57 PASS
 
 ### CHANGED FILES:
-- `src/agents/mock_agents.ts`
-- `src/orchestrator/agent_coordinator.ts`
-- `src/orchestrator/agent_coordinator.test.ts`
-- `src/orchestrator/full_workflow_runner.ts`
+- `src/demo/demo_manifest.ts`
+- `src/demo/demo_manifest.test.ts`
+- `src/demo/run_demo.ts`
+- `docs/e2e_demo.md`
 - `src/index.ts`
 - `AGENT_REPORT.md`
 - `NEXT_STEP.md`
@@ -40,18 +41,17 @@
 ### VERIFICATION:
 - Command: `cd src && npm run lint` -> PASS
 - Command: `cd src && npx tsc -p tsconfig.test.json` -> PASS
-- Command: `cd src && npm test` -> PASS, 56/56 tests
+- Command: `cd src && npm test` -> PASS, 57/57 tests
 - Command: `cd src && npm run build` -> PASS
-- Command: `node -e "const { runFullWorkflow } = require('./src/dist'); ..."` -> PASS, wrote all eight workflow artifacts
+- Command: `node src/dist/demo/run_demo.js` -> PASS
 
 ### COMMIT:
 ```
-feat: add deterministic full agent workflow
+feat: add repeatable end-to-end workflow demo
 ```
 
 ### STILL MISSING:
-- Phase 3 - End-to-End Demo
 - Phase 4 - Polish & Extend
 
 ### NEXT SMALL STEP:
-Phase 3 - End-to-End Demo
+Phase 4 - Polish & Extend

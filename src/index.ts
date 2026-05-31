@@ -31,3 +31,6 @@ export * from "./orchestrator/pm_orchestrator";
 export * from "./orchestrator/workflow_runner";
 export * from "./orchestrator/agent_coordinator";
 export * from "./orchestrator/full_workflow_runner";
+
+// Demo
+export * from "./demo/demo_manifest";

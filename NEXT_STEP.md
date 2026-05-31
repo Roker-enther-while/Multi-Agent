@@ -2,41 +2,39 @@
 
 ## Current Actionable Next Step
 
-**Phase:** Phase 3 - End-to-End Demo
+**Phase:** Phase 4 - Polish & Extend
 
 **Priority:** HIGH
 
-**Action:** Create a repeatable demo that proves the complete requirement-to-report workflow with traceability, verification evidence, and review output.
+**Action:** Add final workflow validation and polish so the project can explicitly prove FINAL PROJECT DONE.
 
 ---
 
 ### What to Build:
 
-1. **src/demo/run_demo.ts**
-   - Run `runFullWorkflow()` with a representative requirement.
-   - Write artifacts under `.ai_runs/end-to-end-demo`.
-   - Print a concise JSON summary for automation.
+1. **src/tools/final_done_validator.ts**
+   - Validate final project done conditions from `CLAUDE.md`.
+   - Check completed status, required artifacts, passing verification, code review, final report, and unresolved blockers.
+   - Return structured pass/fail results with evidence.
 
 2. **src/demo/demo_manifest.ts**
-   - Build a structured manifest from workflow output.
-   - Include run status, artifact paths, verification status, blocker count, and final report path.
+   - Include final validator output in the demo manifest.
+   - Keep the JSON summary automation-friendly.
 
 3. **docs/e2e_demo.md**
-   - Document how to run the demo.
-   - Show expected commands and expected outputs.
-   - Define what proves FINAL PROJECT DONE prerequisites.
+   - Add final validation evidence and troubleshooting notes.
 
 ---
 
 ### Success Criteria:
 
-- [ ] Demo runs from a single command after build.
-- [ ] Demo writes all required artifacts to `.ai_runs/end-to-end-demo`.
-- [ ] Demo summary includes status, traceability report, final report, verification results, and blockers.
-- [ ] Documentation explains the demo and evidence.
-- [ ] Tests cover manifest generation.
+- [ ] Final done validator returns structured checks.
+- [ ] Demo manifest includes final validation checks.
+- [ ] Validator detects missing artifacts and failed verification.
+- [ ] Documentation explains final done proof.
 - [ ] TypeScript build passes.
 - [ ] Tests pass.
+- [ ] Demo command passes and shows final validation success.
 
 ---
 
@@ -45,8 +43,9 @@
 - Add real LLM calls.
 - Add network dependencies.
 - Add unrelated product features.
+- Expand beyond final validation polish.
 
-**First make the completed workflow easy to rerun and inspect.**
+**Finish by making FINAL PROJECT DONE mechanically verifiable.**
 
 ---
 
@@ -59,4 +58,5 @@
 - Project Manager orchestrator scaffold
 - Local tool integration
 - Full deterministic agent workflow
-- Phase 2 tests passing (56/56)
+- Repeatable end-to-end demo
+- Phase 3 tests passing (57/57)
