@@ -207,3 +207,27 @@
 - `cd src && npm test` -> 66/66 PASS
 - `cd src && npm run build` -> PASS
 - `node src/dist/cli.js --help` -> PASS
+
+---
+
+### Phase 6 - Input Source Handler
+
+**Date:** 2026-05-31
+
+**Status:** COMPLETED
+
+**Goal:** Support requirement input from text, Markdown file, JSON file, image metadata placeholder, and voice transcript placeholder.
+
+**Steps Completed:**
+1. Created `src/tools/input_source.ts`.
+2. Normalized all supported sources into `RequirementInput`.
+3. Integrated input normalization into the CLI.
+4. Added placeholder support for image and voice inputs without OCR/ASR.
+5. Added `docs/input_sources.md`.
+6. Added tests for all source types.
+
+**Verification:**
+- `cd src && npm run lint` -> PASS
+- `cd src && npx tsc -p tsconfig.test.json` -> PASS
+- `cd src && npm test` -> 72/72 PASS
+- `cd src && npm run build` -> PASS

@@ -7,6 +7,7 @@ import { inspectCodebase } from "./tools/code_inspector";
 import { readTextFile } from "./tools/file_reader";
 import { generateWorkflowReport } from "./tools/report_generator";
 import { validateFinalDone } from "./tools/final_done_validator";
+import { normalizeRequirementInput, type RequirementInputSourceType } from "./tools/input_source";
 
 export type CliCommand = "run" | "demo" | "validate" | "inspect" | "report";
 
@@ -89,15 +90,53 @@ export async function executeCli(args: string[], cwd: string = process.cwd()): P
 }
 
 function getRequirement(parsed: ParsedCli, cwd: string, required: boolean = true): string {
+  const sourceType = typeof parsed.options["source-type"] === "string"
+    ? parsed.options["source-type"] as RequirementInputSourceType
+    : undefined;
   const text = parsed.options.requirement;
   const file = parsed.options["requirement-file"];
+  const jsonField = parsed.options["json-field"];
+  const imageReference = parsed.options["image-reference"];
+  const voiceTranscript = parsed.options["voice-transcript"];
+
+  if (sourceType === "image_reference" || typeof imageReference === "string") {
+    if (typeof imageReference !== "string") {
+      throw new Error("Image reference input requires --image-reference <path>.");
+    }
+    return normalizeRequirementInput(
+      { type: "image_reference", path: imageReference },
+      { rootDir: cwd }
+    ).requirement;
+  }
+
+  if (sourceType === "voice_transcript" || typeof voiceTranscript === "string") {
+    if (typeof voiceTranscript !== "string") {
+      throw new Error("Voice transcript input requires --voice-transcript <text>.");
+    }
+    return normalizeRequirementInput(
+      { type: "voice_transcript", transcript: voiceTranscript },
+      { rootDir: cwd }
+    ).requirement;
+  }
 
   if (typeof text === "string" && text.trim()) {
-    return text.trim();
+    return normalizeRequirementInput({ type: "text", text }, { rootDir: cwd }).requirement;
   }
 
   if (typeof file === "string" && file.trim()) {
-    return readTextFile(cwd, file).content.trim();
+    const type = sourceType === "file_json" || file.toLowerCase().endsWith(".json")
+      ? "file_json"
+      : "file_markdown";
+    return normalizeRequirementInput(
+      type === "file_json"
+        ? {
+            type,
+            path: file,
+            field: typeof jsonField === "string" ? jsonField : undefined,
+          }
+        : { type, path: file },
+      { rootDir: cwd }
+    ).requirement;
   }
 
   const positionalText = parsed.positionals.join(" ").trim();
@@ -247,6 +286,10 @@ function helpText(command?: CliCommand): string {
     "Options:",
     "  --requirement <text>       Requirement text.",
     "  --requirement-file <path>  Read requirement from a repository file.",
+    "  --source-type <type>       text, file_markdown, file_json, image_reference, voice_transcript.",
+    "  --json-field <field>       JSON field to read for file_json inputs.",
+    "  --image-reference <path>   Placeholder image metadata input, no OCR.",
+    "  --voice-transcript <text>  Placeholder voice transcript input, no ASR.",
     "  --run-id <id>              Optional run identifier.",
     "  --base-dir <path>          Artifact base directory, default .ai_runs.",
     "  --fail-verification        Test failure behavior.",

@@ -19,6 +19,7 @@ export * from "./tools/code_inspector";
 export * from "./tools/command_runner";
 export * from "./tools/report_generator";
 export * from "./tools/final_done_validator";
+export * from "./tools/input_source";
 
 // Prompts
 export * from "./prompts/index";

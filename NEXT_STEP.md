@@ -2,26 +2,23 @@
 
 ## Current Actionable Next Step
 
-**Phase:** Phase 6 - Input Source Handler
+**Phase:** Phase 7 - BA Artifact and Visual Modeling Integration
 
 **Priority:** HIGH
 
-**Action:** Support requirement input from text, Markdown file, JSON file, image metadata placeholder, and voice transcript placeholder.
+**Action:** Use BA Artifact and Visual Modeling prompts in the actual workflow.
 
 ---
 
 ### Required:
 
-- Create input source types:
-  - `text`
-  - `file_markdown`
-  - `file_json`
-  - `image_reference`
-  - `voice_transcript`
-- Do not implement real OCR/ASR yet.
-- Normalize all inputs into `RequirementInput`.
-- Add tests.
-- Update docs.
+- Add artifacts:
+  - `ba_requirement_package.md`
+  - `visual_model_package.md`
+- Ensure demo run creates them.
+- Include Mermaid sections in visual model artifact.
+- Include user stories, acceptance criteria, flow, API/data/UI draft in BA package.
+- Add tests verifying artifacts exist and include required headings.
 
 ---
 
@@ -31,9 +28,10 @@
 - `npx tsc -p tsconfig.test.json`
 - `npm test`
 - `npm run build`
+- `node src/dist/demo/run_demo.js`
 
 ---
 
 ### Commit:
 
-`feat: add multi-source requirement input handler`
+`feat: integrate BA and visual modeling artifacts`

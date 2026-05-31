@@ -4,39 +4,39 @@
 
 **Date:** 2026-05-31
 
-**Phase:** Phase 5 - CLI UX Hardening
+**Phase:** Phase 6 - Input Source Handler
 
-**Task:** Make the workflow CLI easier to use for real users.
+**Task:** Support requirement input from text, Markdown file, JSON file, image metadata placeholder, and voice transcript placeholder.
 
 ---
 
 ### DONE:
-- Created `src/cli.ts` with commands: `run`, `demo`, `validate`, `inspect`, `report`.
-- Added top-level and command-specific `--help`.
-- Supported requirement input from `--requirement`, `--requirement-file`, and positional text.
-- Printed output artifact paths for workflow-producing commands.
-- Returned non-zero results for missing requirements and failed verification/blockers.
-- Added `src/cli.test.ts`.
-- Added package `bin` entry for `multi-agent-workflow`.
+- Created `src/tools/input_source.ts`.
+- Added normalized `RequirementInput` and source types: `text`, `file_markdown`, `file_json`, `image_reference`, `voice_transcript`.
+- Integrated source normalization into the CLI.
+- Added placeholder behavior for image and voice inputs without real OCR/ASR.
+- Added `src/tools/input_source.test.ts`.
+- Added `docs/input_sources.md`.
 
 ### EVIDENCE:
-- CLI parsing tests: PASS
-- Requirement file input test: PASS
-- Failure exit behavior test: PASS
-- CLI help command: PASS
-- Tests: 66/66 PASS
+- Text input normalization: PASS
+- Markdown file input normalization: PASS
+- JSON file input normalization: PASS
+- Custom JSON field support: PASS
+- Image placeholder support: PASS
+- Voice transcript placeholder support: PASS
+- Tests: 72/72 PASS
 
 ### VERIFICATION:
 - `cd src && npm run lint` -> PASS
 - `cd src && npx tsc -p tsconfig.test.json` -> PASS
-- `cd src && npm test` -> PASS, 66/66 tests
+- `cd src && npm test` -> PASS, 72/72 tests
 - `cd src && npm run build` -> PASS
-- `node src/dist/cli.js --help` -> PASS
 
 ### COMMIT:
 ```
-feat: harden workflow CLI UX
+feat: add multi-source requirement input handler
 ```
 
 ### NEXT SMALL STEP:
-Phase 6 - Input Source Handler
+Phase 7 - BA Artifact and Visual Modeling Integration
