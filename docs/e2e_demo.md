@@ -25,7 +25,7 @@ The command prints a JSON manifest with:
 
 - `status: "completed"`
 - `runId: "end-to-end-demo"`
-- all eight artifacts: `context_pack`, `task_plan`, `test_plan`, `implementation_summary`, `verification_report`, `code_review_report`, `traceability_report`, `final_report`
+- all eleven artifacts: `context_pack`, `ba_requirement_package`, `visual_model_package`, `senior_review`, `task_plan`, `test_plan`, `implementation_summary`, `verification_report`, `code_review_report`, `traceability_report`, `final_report`
 - `verification.allPassed: true`
 - `blockers.count: 0`
 - final done prerequisite flags set to `true`

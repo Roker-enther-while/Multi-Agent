@@ -1,20 +1,19 @@
 # NEXT STEP
 
-## Mini-Phase: CLI run/report/validate should generate HTML report
+## Mini-Phase: Align docs with actual CLI behavior
 
-**Problem:** The `cli run` command runs the full workflow and produces all markdown artifacts, but does NOT generate `report.html`. Only `run_demo.js` generates it. A real user using `cli run` gets no HTML report.
+**Problem:**
+1. `docs/e2e_demo.md` lists 8 artifacts but demo now produces 11 (added ba_requirement_package, visual_model_package, senior_review).
+2. README does not document that `cli run` generates `report.html`.
+3. README does not document `report` or `validate` CLI commands.
 
-**Improvement:** Add `writeHtmlWorkflowReport(result)` call to `runCommand`, `validateCommand`, and `reportCommand` in `cli.ts`. Include `htmlReportPath` in CLI output.
+**Improvement:** Update docs/e2e_demo.md artifact list. Update README to document all CLI commands and their outputs including report.html.
 
 **Files likely affected:**
-- `src/cli.ts` — add HTML report generation to run/validate/report commands
+- `docs/e2e_demo.md` — fix artifact list
+- `README.md` — add CLI commands section with report.html output
 
 **Verification commands:**
-- `cd src && npm run lint`
-- `cd src && npx tsc -p tsconfig.test.json`
-- `cd src && npm test`
-- `cd src && npm run build`
-- `node src/dist/cli.js run --requirement "Test HTML report generation" --run-id html-test`
-- Verify `.ai_runs/html-test/report.html` exists
+- Review docs match actual CLI output
 
-**Done condition:** All three CLI commands (run, validate, report) generate `report.html` in the run directory. All tests pass. Output includes `htmlReportPath`.
+**Done condition:** docs/e2e_demo.md lists all 11 artifacts. README documents cli run/validate/report with report.html output.

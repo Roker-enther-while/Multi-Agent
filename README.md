@@ -20,7 +20,34 @@ node src/dist/demo/run_demo.js
 node src/dist/evaluation/run_evaluation.js
 ```
 
-Generated workflow artifacts are written under `.ai_runs/`. The demo produces `report.html` for human review and a manifest with `finalValidation.passed`.
+### CLI Commands
+
+The CLI provides five commands. All workflow commands (`run`, `demo`, `validate`, `report`) generate `report.html` in the run directory.
+
+```bash
+# Run workflow from requirement text — generates all artifacts + report.html
+node src/dist/cli.js run --requirement "Add GET /health/details returning app_name, version, and environment."
+
+# Run workflow from a requirement file
+node src/dist/cli.js run --requirement-file path/to/requirement.md
+
+# Run with a custom run ID
+node src/dist/cli.js run --requirement "..." --run-id my-run
+
+# Run the standard end-to-end demo
+node src/dist/demo/run_demo.js
+
+# Run workflow and print final validation JSON
+node src/dist/cli.js validate --requirement "..."
+
+# Run workflow and write workflow-report.md + report.html
+node src/dist/cli.js report --requirement "..."
+
+# Inspect repository files
+node src/dist/cli.js inspect
+```
+
+Generated workflow artifacts are written under `.ai_runs/<runId>/`. Each run produces 11 markdown artifacts plus `report.html` for human review.
 
 Thesis documentation:
 
