@@ -1,0 +1,39 @@
+{
+  "requiredArtifacts": [
+    "context_pack",
+    "ba_requirement_package",
+    "visual_model_package",
+    "senior_review",
+    "task_plan",
+    "test_plan",
+    "implementation_summary",
+    "verification_report",
+    "code_review_report",
+    "traceability_report",
+    "final_report"
+  ],
+  "requiredHeadings": {
+    "ba_requirement_package": [
+      "## User Stories",
+      "## Acceptance Criteria",
+      "## Flow",
+      "## API Draft",
+      "## Data Draft",
+      "## UI Draft"
+    ],
+    "visual_model_package": [
+      "```mermaid",
+      "## Workflow Diagram"
+    ],
+    "senior_review": [
+      "## Senior Value Gates",
+      "traceability_score",
+      "architecture_fit_score"
+    ],
+    "final_report": [
+      "## Senior Value Gates",
+      "traceability_score",
+      "architecture_fit_score"
+    ]
+  }
+}

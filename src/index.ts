@@ -22,6 +22,7 @@ export * from "./tools/final_done_validator";
 export * from "./tools/input_source";
 export * from "./tools/senior_value_gates";
 export * from "./tools/html_report_generator";
+export * from "./evaluation/workflow_evaluator";
 
 // Prompts
 export * from "./prompts/index";

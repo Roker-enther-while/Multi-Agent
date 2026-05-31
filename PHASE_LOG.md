@@ -304,3 +304,27 @@
 - `cd src && npm test` -> 75/75 PASS
 - `cd src && npm run build` -> PASS
 - Demo generated `.ai_runs/end-to-end-demo/report.html` -> PASS
+
+---
+
+### Phase 10 - Evaluation Dataset for Agent Workflow
+
+**Date:** 2026-05-31
+
+**Status:** COMPLETED
+
+**Goal:** Create small benchmark tasks to evaluate workflow quality.
+
+**Steps Completed:**
+1. Added five sample requirement files.
+2. Added expected artifact and heading checklist.
+3. Created workflow evaluator library and script.
+4. Added evaluator tests.
+5. Ran evaluation script against sample tasks.
+
+**Verification:**
+- `cd src && npm run lint` -> PASS
+- `cd src && npx tsc -p tsconfig.test.json` -> PASS
+- `cd src && npm test` -> 76/76 PASS
+- `cd src && npm run build` -> PASS
+- `node src/dist/evaluation/run_evaluation.js` -> PASS, 5/5 tasks
