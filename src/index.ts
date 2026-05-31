@@ -20,6 +20,7 @@ export * from "./tools/command_runner";
 export * from "./tools/report_generator";
 export * from "./tools/final_done_validator";
 export * from "./tools/input_source";
+export * from "./tools/senior_value_gates";
 
 // Prompts
 export * from "./prompts/index";

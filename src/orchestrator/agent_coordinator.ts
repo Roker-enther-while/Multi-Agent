@@ -18,6 +18,7 @@ import {
 import { createRunDirectory, writeArtifact } from "../tools/artifact_store";
 import { inspectCodebase } from "../tools/code_inspector";
 import { runVerificationCommand } from "../tools/command_runner";
+import { buildSeniorValueAssessment } from "../tools/senior_value_gates";
 import type { AgentFinding, AgentInput, AgentRunResult } from "../types/agents";
 import type { ArtifactRef, ArtifactType } from "../types/artifacts";
 import type { VerificationCommand, VerificationResult, WorkflowPhase } from "../types/workflow";
@@ -78,11 +79,18 @@ const WORKFLOW_STEPS: WorkflowAgentStep[] = [
     dependencies: ["ba-requirement-package"],
   },
   {
+    id: "senior-review",
+    phase: "senior_review",
+    artifactType: "senior_review",
+    description: "Evaluate senior value gates and scoring.",
+    dependencies: ["visual-model-package"],
+  },
+  {
     id: "task-plan",
     phase: "planning",
     artifactType: "task_plan",
     description: "Create a task plan from the context pack.",
-    dependencies: ["visual-model-package"],
+    dependencies: ["senior-review"],
   },
   {
     id: "test-plan",
@@ -298,6 +306,7 @@ export class AgentCoordinator {
       maxFiles: 200,
       includeExtensions: [".ts", ".md", ".json"],
     });
+    const seniorValueAssessment = buildSeniorValueAssessment(requirement);
 
     return {
       requirement,
@@ -313,6 +322,8 @@ export class AgentCoordinator {
         verificationResults,
         baRequirementPackagePath: artifactsByType.get("ba_requirement_package")?.path,
         visualModelPackagePath: artifactsByType.get("visual_model_package")?.path,
+        seniorReviewPath: artifactsByType.get("senior_review")?.path,
+        seniorValueAssessment,
         traceabilityReportPath: artifactsByType.get("traceability_report")?.path,
       },
     };

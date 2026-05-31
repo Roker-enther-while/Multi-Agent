@@ -2,30 +2,22 @@
 
 ## Current Actionable Next Step
 
-**Phase:** Phase 8 - Human Senior Value Gates
+**Phase:** Phase 9 - Report Viewer Artifact
 
 **Priority:** HIGH
 
-**Action:** Make senior reasoning measurable.
+**Action:** Generate a single human-readable HTML report for demo/reporting.
 
 ---
 
 ### Required:
 
-- Add structured gate outputs:
-  - problem framing
-  - scope decision
-  - risk assessment
-  - architecture judgment
-  - priority decision
-  - quality gate
-  - handoff
-- Add score fields:
-  - `traceability_score`
-  - `test_readiness_score`
-  - `scope_risk_score`
-  - `architecture_fit_score`
-- Add tests for gate presence and final report inclusion.
+- Create HTML report generator.
+- Input: artifacts from one run.
+- Output: `.ai_runs/<runId>/report.html`
+- Include requirement, context pack, BA package, visual diagrams as Mermaid code blocks, task plan, test plan, verification, review, traceability matrix, final status.
+- No frontend app required.
+- Add tests for report generation.
 
 ---
 
@@ -35,9 +27,10 @@
 - `npx tsc -p tsconfig.test.json`
 - `npm test`
 - `npm run build`
+- demo generates `report.html`
 
 ---
 
 ### Commit:
 
-`feat: add senior value gates and scoring`
+`feat: add HTML workflow report generator`

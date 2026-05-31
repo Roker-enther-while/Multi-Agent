@@ -8,6 +8,7 @@ import type {
   AgentRunResult,
 } from "../types/agents";
 import type { VerificationResult } from "../types/workflow";
+import { buildSeniorValueAssessment, renderSeniorValueAssessment, type SeniorValueAssessment } from "../tools/senior_value_gates";
 
 function completedResult(
   agent: AgentName,
@@ -205,6 +206,32 @@ export class MockVisualModelingAgent extends BaseAgent {
   }
 }
 
+export class MockSeniorLayerAgent extends BaseAgent {
+  public constructor() {
+    super("senior_layer");
+  }
+
+  public execute(input: AgentInput): AgentRunResult {
+    const assessment = getSeniorAssessment(input);
+
+    return completedResult(
+      this.name,
+      [
+        "# Senior Review",
+        "",
+        renderSeniorValueAssessment(assessment),
+      ].join("\n"),
+      [
+        {
+          decision: "Proceed through deterministic workflow gates.",
+          rationale: "The structured senior assessment shows acceptable traceability, test readiness, scope risk, and architecture fit.",
+          risk: "low",
+        },
+      ]
+    );
+  }
+}
+
 export class MockTestDesignerAgent extends BaseAgent {
   public constructor() {
     super("test_designer");
@@ -345,6 +372,8 @@ export class MockFinalReporterAgent extends BaseAgent {
   }
 
   public execute(input: AgentInput): AgentRunResult {
+    const assessment = getSeniorAssessment(input);
+
     return completedResult(
       this.name,
       [
@@ -354,6 +383,8 @@ export class MockFinalReporterAgent extends BaseAgent {
         "",
         "## Result",
         "The deterministic full workflow completed and produced traceable artifacts.",
+        "",
+        renderSeniorValueAssessment(assessment),
         "",
         `Traceability Report: ${input.extra?.traceabilityReportPath ?? "missing"}`,
       ].join("\n")
@@ -366,6 +397,7 @@ export function createDefaultMockAgents(): BaseAgent[] {
     new MockContextReaderAgent(),
     new MockBAArtifactAgent(),
     new MockVisualModelingAgent(),
+    new MockSeniorLayerAgent(),
     new MockPlannerAgent(),
     new MockTestDesignerAgent(),
     new MockImplementationAgent(),
@@ -374,4 +406,12 @@ export function createDefaultMockAgents(): BaseAgent[] {
     new MockTraceabilityReporterAgent(),
     new MockFinalReporterAgent(),
   ];
+}
+
+function getSeniorAssessment(input: AgentInput): SeniorValueAssessment {
+  if (input.extra?.seniorValueAssessment && typeof input.extra.seniorValueAssessment === "object") {
+    return input.extra.seniorValueAssessment as SeniorValueAssessment;
+  }
+
+  return buildSeniorValueAssessment(input.requirement ?? "");
 }

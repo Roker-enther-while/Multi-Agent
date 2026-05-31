@@ -54,7 +54,7 @@ describe("AgentCoordinator", () => {
     });
 
     assert.equal(result.state.status, "completed");
-    assert.equal(result.agentResults.length, 10);
+    assert.equal(result.agentResults.length, 11);
     assert.equal(result.state.verificationResults.length, 1);
     assert.equal(result.state.verificationResults[0].passed, true);
 
@@ -63,6 +63,7 @@ describe("AgentCoordinator", () => {
       "context_pack",
       "ba_requirement_package",
       "visual_model_package",
+      "senior_review",
       "task_plan",
       "test_plan",
       "implementation_summary",
@@ -80,11 +81,18 @@ describe("AgentCoordinator", () => {
 
     const codeReview = result.artifacts.find((artifact) => artifact.type === "code_review_report");
     const finalReport = result.artifacts.find((artifact) => artifact.type === "final_report");
+    const seniorReview = result.artifacts.find((artifact) => artifact.type === "senior_review");
 
     assert.ok(codeReview);
     assert.ok(finalReport);
+    assert.ok(seniorReview);
     assert.match(readArtifact(codeReview.path), /# Code Review Report/);
     assert.match(readArtifact(finalReport.path), /# Final Report/);
+    assert.match(readArtifact(seniorReview.path), /Problem Framing/);
+    assert.match(readArtifact(seniorReview.path), /scope_decision/);
+    assert.match(readArtifact(seniorReview.path), /traceability_score/);
+    assert.match(readArtifact(finalReport.path), /## Senior Value Gates/);
+    assert.match(readArtifact(finalReport.path), /architecture_fit_score/);
 
     const baPackage = result.artifacts.find((artifact) => artifact.type === "ba_requirement_package");
     const visualModel = result.artifacts.find((artifact) => artifact.type === "visual_model_package");
