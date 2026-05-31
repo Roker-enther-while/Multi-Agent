@@ -115,26 +115,32 @@ header button:hover{background:#475569}
   <div class="settings-modal">
     <h2>Model Settings</h2>
     <label>Provider</label>
-    <select id="setProvider">
-      <option value="mock">Mock (default)</option>
+    <select id="setProvider" onchange="updateProviderHelp()">
+      <option value="mock">Mock (default, no API key needed)</option>
       <option value="openai_compatible">OpenAI Compatible</option>
-      <option value="anthropic">Anthropic</option>
-      <option value="gemini">Gemini</option>
-      <option value="ollama">Ollama</option>
-      <option value="lmstudio">LM Studio</option>
+      <option value="anthropic">Anthropic (Claude)</option>
+      <option value="gemini">Google Gemini</option>
+      <option value="ollama">Ollama (local)</option>
+      <option value="lmstudio">LM Studio (local)</option>
     </select>
+    <div id="providerHelp" style="font-size:11px;color:#64748b;margin-top:4px"></div>
     <label>Base URL</label>
     <input id="setBaseUrl" placeholder="http://localhost:11434">
-    <label>API Key</label>
-    <input id="setApiKey" type="password" placeholder="sk-...">
+    <label>API Key <span style="color:#64748b">(never logged)</span></label>
+    <div style="display:flex;gap:6px">
+      <input id="setApiKey" type="password" placeholder="sk-..." style="flex:1">
+      <button onclick="toggleKeyVisibility()" style="background:#334155;color:#e2e8f0;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:12px">👁</button>
+    </div>
     <label>Model Name</label>
     <input id="setModelName" placeholder="mock-model">
-    <label>Temperature</label>
+    <label>Temperature (0-2)</label>
     <input id="setTemperature" type="number" step="0.1" min="0" max="2" value="0.2">
     <label>Max Tokens</label>
     <input id="setMaxTokens" type="number" value="4096">
+    <div id="connectionStatus" style="margin-top:8px;font-size:13px"></div>
     <div class="btn-row">
       <button class="btn-secondary" onclick="closeSettings()">Cancel</button>
+      <button class="btn-secondary" onclick="testConnectionFromSettings()">Test Connection</button>
       <button class="btn-primary" onclick="saveSettings()">Save</button>
     </div>
   </div>
@@ -351,9 +357,38 @@ async function saveSettings() {
   closeSettings();
 }
 
+function updateProviderHelp() {
+  const provider = document.getElementById('setProvider').value;
+  const help = {
+    mock: 'No configuration needed. Generates deterministic mock responses.',
+    openai_compatible: 'Requires Base URL and API Key. Works with OpenAI, Groq, Together, etc.',
+    anthropic: 'Requires API Key. Model: claude-sonnet-4-20250514, claude-3-5-haiku-20241022, etc.',
+    gemini: 'Requires API Key. Model: gemini-pro, gemini-1.5-pro, etc.',
+    ollama: 'Requires Base URL (default http://localhost:11434). No API key needed.',
+    lmstudio: 'Requires Base URL (default http://localhost:1234). No API key needed.',
+  };
+  document.getElementById('providerHelp').textContent = help[provider] || '';
+}
+
+function toggleKeyVisibility() {
+  const input = document.getElementById('setApiKey');
+  input.type = input.type === 'password' ? 'text' : 'password';
+}
+
 async function testConnection() {
   const result = await fetchJSON('/api/models/test-connection', { method: 'POST' });
   alert(result.ok ? `✅ ${result.message}` : `❌ ${result.message}`);
+}
+
+async function testConnectionFromSettings() {
+  const statusEl = document.getElementById('connectionStatus');
+  statusEl.textContent = 'Testing...';
+  statusEl.style.color = '#94a3b8';
+  // Save first to apply current settings
+  await saveSettings();
+  const result = await fetchJSON('/api/models/test-connection', { method: 'POST' });
+  statusEl.textContent = result.ok ? `✅ ${result.message}` : `❌ ${result.message}`;
+  statusEl.style.color = result.ok ? '#6ee7b7' : '#fca5a5';
 }
 
 // Mode selector
