@@ -4,54 +4,30 @@
 
 **Date:** 2026-05-31
 
-**Phase:** Advanced Release Roadmap (v1.1–v1.6)
+**Phase:** Release Freeze and Thesis Packaging
 
-**Status:** ADVANCED RELEASE DONE
+**Status:** RELEASE FREEZE DONE
 
 ---
 
-### VERSIONS COMPLETED:
+### TASKS COMPLETED:
 
-**v1.1 — Real LLM Execution**
-- AGENT_EXECUTION_MODE=mock|real|hybrid
-- LLM agent runner, prompt assembler, output validator
-- Agent API: GET/POST /api/agents/settings, POST /api/agents/test
-- UI: execution mode selector
-
-**v1.2 — GitHub PR Integration**
-- GitHub client (mock + real)
-- Import issue as requirement
-- Create PR from run
-- PR body with summary, tests, review, traceability
-
-**v1.3 — Browser/E2E Automation**
-- Browser runner abstraction (Playwright optional)
-- E2E scenario format (JSON steps)
-- E2E reporter (MD + JSON)
-- Demo scenario included
-
-**v1.4 — Team Collaboration Mode**
-- Comments API
-- Approval/request changes flow
-- Decision log
-- Roles: BA, developer, reviewer, tester, tech_lead
-
-**v1.5 — Voice/Image Requirement Understanding**
-- Image understanding processor
-- Voice understanding processor
-- Requirement fusion → unified requirement
-
-**v1.6 — Multi-Repo Benchmark**
-- 3 benchmark repos (ts_api_app, fastapi_app, node_cli_tool)
-- 12 benchmark tasks
-- Benchmark runner with scoring
-- JSON/MD reports
+1. **Feature Inventory** — docs/feature_inventory.md with all capabilities
+2. **Final Architecture** — docs/final_architecture.md with Mermaid diagrams
+3. **Thesis Materials** — 6 thesis docs (problem, solution, evaluation, limitations, future work, comparison)
+4. **Demo Package** — DEMO_CHECKLIST.md, DEMO_QUERIES.md updated
+5. **Fresh Clone Verification** — FRESH_CLONE_VERIFICATION.md with verified commands
+6. **Final Release Audit** — FINAL_RELEASE_AUDIT.md with all conditions
+7. **Release Notes** — RELEASE_NOTES.md for v1.0.0
+8. **Final Verification** — All commands pass
 
 ### VERIFICATION:
 - `cd src && npm run lint` -> PASS
 - `cd src && npm run build` -> PASS
 - `cd src && npm test` -> PASS, 77/77
 - `node src/dist/evaluation/run_evaluation.js` -> PASS, 5/5
+- `node src/dist/cli.js --help` -> PASS
+- `node src/dist/demo/run_demo.js` -> PASS
 
-### ADVANCED RELEASE DONE:
-All v1.1–v1.6 complete. Tests/build pass. App still runs. Demo still works.
+### RELEASE FREEZE DONE:
+All conditions satisfied. Project ready for thesis submission and demo.
