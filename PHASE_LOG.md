@@ -99,27 +99,46 @@
 
 ### Phase 2 - Full Agent Implementation
 
-**Date:** Next
+**Date:** 2026-05-31
 
-**Status:** PLANNED
+**Status:** COMPLETED
 
 **Goal:** Implement deterministic logical agents and sequential coordinator wiring for the complete workflow.
 
-**Planned Steps:**
+**Steps Completed:**
 1. Create `src/agents/mock_agents.ts`.
 2. Create `src/orchestrator/agent_coordinator.ts`.
 3. Create `src/orchestrator/full_workflow_runner.ts`.
 4. Add tests for successful full workflow and blocker handling.
 5. Verify TypeScript build and tests.
 
+**Verification:**
+- `cd src && npm run lint` -> PASS
+- `cd src && npx tsc -p tsconfig.test.json` -> PASS
+- `cd src && npm test` -> 56/56 PASS
+- `cd src && npm run build` -> PASS
+- Demo wrote all eight workflow artifacts under `.ai_runs/phase-2-demo` -> PASS
+
+---
+
+### Phase 3 - End-to-End Demo
+
+**Date:** Next
+
+**Status:** PLANNED
+
+**Goal:** Create a repeatable demo proving requirement-to-report traceability, verification, and review output.
+
+**Planned Steps:**
+1. Create `src/demo/run_demo.ts`.
+2. Create `src/demo/demo_manifest.ts`.
+3. Create `docs/e2e_demo.md`.
+4. Add tests for manifest generation.
+5. Verify build, tests, and demo command.
+
 ---
 
 ### Future Phases (Planned)
-
-**Phase 3 - End-to-End Demo**
-- Single requirement walkthrough
-- Full traceability proof
-- Verification evidence
 
 **Phase 4 - Polish & Extend**
 - Error handling

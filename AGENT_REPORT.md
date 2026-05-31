@@ -4,39 +4,34 @@
 
 **Date:** 2026-05-31
 
-**Phase:** Phase 1 - Tool Integration
+**Phase:** Phase 2 - Full Agent Implementation
 
-**Task:** Add deterministic local tools for file reading, code inspection, command execution, and report generation.
+**Task:** Implement deterministic logical agents and sequential coordinator wiring for the complete workflow.
 
 ---
 
 ### DONE:
-- Created `src/tools/file_reader.ts` for safe UTF-8 reads constrained to a repository root.
-- Created `src/tools/code_inspector.ts` for deterministic project file summaries.
-- Created `src/tools/command_runner.ts` for structured verification command execution.
-- Created `src/tools/report_generator.ts` for Markdown traceability reports.
-- Exported all Phase 1 tools from `src/index.ts`.
-- Added unit tests for success and failure paths.
+- Created `src/agents/mock_agents.ts` with deterministic agents extending `BaseAgent`.
+- Created `src/orchestrator/agent_coordinator.ts` for sequential agent execution.
+- Created `src/orchestrator/full_workflow_runner.ts` for requirement-to-final-report workflow runs.
+- Exported Phase 2 agents and orchestrator APIs from `src/index.ts`.
+- Added tests for successful full workflow and verification blocker behavior.
+- Ran a sample full workflow into `.ai_runs/phase-2-demo`.
 
 ### EVIDENCE:
-- File reads inside root: PASS
-- Path traversal rejection: PASS
-- Missing file handling: PASS
-- Code inspection excludes `node_modules`, `dist`, `.git`, `.ai_runs`, `.next`: PASS
-- Command runner captures stdout, stderr, exit code, duration, timestamp: PASS
-- Destructive command patterns rejected: PASS
-- Report generator includes traceability, verification, decisions, blockers: PASS
-- Tests: 54/54 PASS
+- Agents return structured `AgentRunResult`: PASS
+- Coordinator passes artifact paths between agents: PASS
+- Required artifacts written: context_pack, task_plan, test_plan, implementation_summary, verification_report, code_review_report, traceability_report, final_report
+- Verification results recorded in `ProjectState`: PASS
+- Code review generated: PASS
+- Failed verification creates blocker and stops before review/final report: PASS
+- Tests: 56/56 PASS
 
 ### CHANGED FILES:
-- `src/tools/file_reader.ts`
-- `src/tools/file_reader.test.ts`
-- `src/tools/code_inspector.ts`
-- `src/tools/code_inspector.test.ts`
-- `src/tools/command_runner.ts`
-- `src/tools/command_runner.test.ts`
-- `src/tools/report_generator.ts`
-- `src/tools/report_generator.test.ts`
+- `src/agents/mock_agents.ts`
+- `src/orchestrator/agent_coordinator.ts`
+- `src/orchestrator/agent_coordinator.test.ts`
+- `src/orchestrator/full_workflow_runner.ts`
 - `src/index.ts`
 - `AGENT_REPORT.md`
 - `NEXT_STEP.md`
@@ -45,18 +40,18 @@
 ### VERIFICATION:
 - Command: `cd src && npm run lint` -> PASS
 - Command: `cd src && npx tsc -p tsconfig.test.json` -> PASS
-- Command: `cd src && npm test` -> PASS, 54/54 tests
+- Command: `cd src && npm test` -> PASS, 56/56 tests
 - Command: `cd src && npm run build` -> PASS
+- Command: `node -e "const { runFullWorkflow } = require('./src/dist'); ..."` -> PASS, wrote all eight workflow artifacts
 
 ### COMMIT:
 ```
-feat: add deterministic local workflow tools
+feat: add deterministic full agent workflow
 ```
 
 ### STILL MISSING:
-- Phase 2 - Full Agent Implementation
 - Phase 3 - End-to-End Demo
 - Phase 4 - Polish & Extend
 
 ### NEXT SMALL STEP:
-Phase 2 - Full Agent Implementation
+Phase 3 - End-to-End Demo
