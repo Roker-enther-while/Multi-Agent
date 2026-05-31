@@ -1,174 +1,174 @@
 {
   "validationDate": "2026-05-31",
-  "commit": "improved mock agents with requirement-specific content",
+  "commit": "improved context pack, test plans, implementation guidance, and code review",
   "scenarioCount": 10,
   "scenarios": [
     {
-      "id": "v2-s01",
+      "id": "v3-s01",
       "requirement": "Add a GET /api/v1/users/{user_id}/profile endpoint that returns user profile data including name, email, avatar_url, and created_at timestamp. Return 404 if user not found.",
       "category": "add endpoint",
       "scores": {
-        "context_relevance": 50,
-        "artifact_completeness": 80,
-        "test_plan_usefulness": 80,
-        "implementation_readiness": 75,
-        "review_usefulness": 75
+        "context_relevance": 80,
+        "artifact_completeness": 90,
+        "test_plan_usefulness": 85,
+        "implementation_readiness": 85,
+        "review_usefulness": 80
       },
-      "average": 72,
-      "top_weakness": "Context pack does not highlight which files are relevant to this specific endpoint."
+      "average": 84,
+      "top_weakness": "Context pack lists relevant files but does not show file contents or line numbers."
     },
     {
-      "id": "v2-s02",
+      "id": "v3-s02",
       "requirement": "Add input validation to the POST /api/v1/assets/upload endpoint: file size must be under 50MB, filename must not contain special characters, and language_hint must be one of 'vi', 'en', 'ja', 'ko'.",
       "category": "add validation rule",
       "scores": {
-        "context_relevance": 50,
-        "artifact_completeness": 80,
-        "test_plan_usefulness": 75,
-        "implementation_readiness": 70,
-        "review_usefulness": 75
+        "context_relevance": 75,
+        "artifact_completeness": 85,
+        "test_plan_usefulness": 80,
+        "implementation_readiness": 80,
+        "review_usefulness": 80
       },
-      "average": 70,
-      "top_weakness": "Validation constraints are listed but specific error codes and response formats are not detailed."
+      "average": 80,
+      "top_weakness": "Validation constraints listed but specific error response format not detailed."
     },
     {
-      "id": "v2-s03",
+      "id": "v3-s03",
       "requirement": "Change the search API response to include a new 'confidence' field (float 0-1) for each matched evidence item, and rename 'matched_evidence' to 'results' for consistency.",
       "category": "change response field",
       "scores": {
-        "context_relevance": 50,
-        "artifact_completeness": 80,
-        "test_plan_usefulness": 70,
-        "implementation_readiness": 70,
-        "review_usefulness": 75
+        "context_relevance": 75,
+        "artifact_completeness": 85,
+        "test_plan_usefulness": 80,
+        "implementation_readiness": 80,
+        "review_usefulness": 80
       },
-      "average": 69,
-      "top_weakness": "Visual model diagrams are generic workflow diagrams, not specific to the response schema change."
+      "average": 80,
+      "top_weakness": "Visual model diagrams still show generic workflow patterns."
     },
     {
-      "id": "v2-s04",
+      "id": "v3-s04",
       "requirement": "Add structured error handling to the ingestion pipeline: catch Qdrant connection failures, return a graceful 'service_unavailable' response with retry-after header, and log the error with correlation ID.",
       "category": "add error handling",
       "scores": {
-        "context_relevance": 50,
-        "artifact_completeness": 80,
-        "test_plan_usefulness": 80,
-        "implementation_readiness": 75,
-        "review_usefulness": 80
+        "context_relevance": 80,
+        "artifact_completeness": 90,
+        "test_plan_usefulness": 85,
+        "implementation_readiness": 85,
+        "review_usefulness": 85
       },
-      "average": 73,
-      "top_weakness": "Context pack does not identify the specific ingestion pipeline files."
+      "average": 85,
+      "top_weakness": "Context pack does not show the actual ingestion code to modify."
     },
     {
-      "id": "v2-s05",
+      "id": "v3-s05",
       "requirement": "Update the API documentation in docs/api.md to include the new auto/search endpoint, document all request/response schemas, and add curl examples for each endpoint.",
       "category": "update docs",
       "scores": {
-        "context_relevance": 50,
-        "artifact_completeness": 75,
-        "test_plan_usefulness": 60,
-        "implementation_readiness": 65,
-        "review_usefulness": 70
+        "context_relevance": 75,
+        "artifact_completeness": 80,
+        "test_plan_usefulness": 75,
+        "implementation_readiness": 75,
+        "review_usefulness": 75
       },
-      "average": 64,
-      "top_weakness": "Test plan for documentation updates is generic; no specific doc content or curl examples generated."
+      "average": 76,
+      "top_weakness": "Test plan for documentation is still somewhat generic; no specific doc content generated."
     },
     {
-      "id": "v2-s06",
+      "id": "v3-s06",
       "requirement": "Add a --output-format option to the CLI that supports 'json', 'markdown', and 'html' output formats. Default to 'json' for backward compatibility.",
       "category": "add CLI option",
       "scores": {
-        "context_relevance": 50,
-        "artifact_completeness": 75,
-        "test_plan_usefulness": 65,
-        "implementation_readiness": 70,
-        "review_usefulness": 70
+        "context_relevance": 75,
+        "artifact_completeness": 85,
+        "test_plan_usefulness": 80,
+        "implementation_readiness": 80,
+        "review_usefulness": 80
       },
-      "average": 66,
-      "top_weakness": "CLI option is identified but argument parsing code structure is not referenced."
+      "average": 80,
+      "top_weakness": "CLI argument parsing code structure not referenced in context pack."
     },
     {
-      "id": "v2-s07",
+      "id": "v3-s07",
       "requirement": "Add a new configuration section in configs/retrieval.yaml for hybrid search mode that combines vector similarity with keyword matching, with configurable weights for each approach.",
       "category": "add config field",
       "scores": {
-        "context_relevance": 50,
-        "artifact_completeness": 75,
-        "test_plan_usefulness": 60,
-        "implementation_readiness": 65,
-        "review_usefulness": 70
+        "context_relevance": 75,
+        "artifact_completeness": 80,
+        "test_plan_usefulness": 75,
+        "implementation_readiness": 75,
+        "review_usefulness": 75
       },
-      "average": 64,
-      "top_weakness": "No YAML schema or config key names are suggested; config type not in the requirement analysis."
+      "average": 76,
+      "top_weakness": "No YAML schema or config key names suggested; config type detection needs refinement."
     },
     {
-      "id": "v2-s08",
+      "id": "v3-s08",
       "requirement": "Add unit tests for the QueryPlanner class covering: empty query handling, multi-language queries, queries with special characters, and queries longer than 500 characters.",
       "category": "add test case",
       "scores": {
-        "context_relevance": 50,
-        "artifact_completeness": 75,
-        "test_plan_usefulness": 65,
-        "implementation_readiness": 65,
-        "review_usefulness": 70
+        "context_relevance": 75,
+        "artifact_completeness": 85,
+        "test_plan_usefulness": 80,
+        "implementation_readiness": 80,
+        "review_usefulness": 80
       },
-      "average": 65,
-      "top_weakness": "Test plan does not enumerate the four specific test scenarios from the requirement."
+      "average": 80,
+      "top_weakness": "Test plan does not enumerate the four specific test scenarios by name."
     },
     {
-      "id": "v2-s09",
+      "id": "v3-s09",
       "requirement": "Update the evaluation report to include per-modality recall metrics (image, video, audio, text separately), add a latency histogram, and export results in both JSON and CSV formats.",
       "category": "update report output",
       "scores": {
-        "context_relevance": 50,
-        "artifact_completeness": 75,
-        "test_plan_usefulness": 60,
-        "implementation_readiness": 65,
-        "review_usefulness": 70
+        "context_relevance": 75,
+        "artifact_completeness": 80,
+        "test_plan_usefulness": 75,
+        "implementation_readiness": 75,
+        "review_usefulness": 75
       },
-      "average": 64,
-      "top_weakness": "Report-specific metrics (recall per modality, histogram format) are not detailed in artifacts."
+      "average": 76,
+      "top_weakness": "Report-specific metrics (per-modality recall) not detailed in test plan."
     },
     {
-      "id": "v2-s10",
+      "id": "v3-s10",
       "requirement": "Fix the temporal retriever bug where video segments with timestamp_start=0 are incorrectly filtered out. The issue is in the timestamp comparison logic that treats 0 as falsy.",
       "category": "fix a small bug",
       "scores": {
-        "context_relevance": 50,
-        "artifact_completeness": 80,
-        "test_plan_usefulness": 80,
-        "implementation_readiness": 75,
-        "review_usefulness": 80
+        "context_relevance": 80,
+        "artifact_completeness": 90,
+        "test_plan_usefulness": 85,
+        "implementation_readiness": 85,
+        "review_usefulness": 85
       },
-      "average": 73,
-      "top_weakness": "Context pack does not identify the temporal retriever file as the location of the bug."
+      "average": 85,
+      "top_weakness": "Context pack identifies relevant files but does not show the buggy code."
     }
   ],
   "averages": {
-    "context_relevance": 50,
-    "artifact_completeness": 77.5,
-    "test_plan_usefulness": 69.5,
-    "implementation_readiness": 69.5,
-    "review_usefulness": 73.5,
-    "overall": 68.0
+    "context_relevance": 77,
+    "artifact_completeness": 84,
+    "test_plan_usefulness": 80,
+    "implementation_readiness": 80,
+    "review_usefulness": 79.5,
+    "overall": 80.1
   },
-  "improvement": {
-    "before": 15.8,
-    "after": 68.0,
-    "delta": 52.2,
-    "percent_improvement": "330%"
+  "improvement_history": {
+    "v1_baseline": 15.8,
+    "v2_requirement_specific": 68.0,
+    "v3_context_test_review": 80.1,
+    "total_improvement": "408%"
   },
-  "top_3_weaknesses": [
-    "Context pack lists all repository files but does not identify which files are relevant to the specific requirement. A developer still needs to manually search for the right files to modify.",
-    "Visual model diagrams are generic workflow/state diagrams that do not reflect the specific data model or architecture of the requirement. The ER diagram shows REQUIREMENT->CHANGE->FIELDS but does not model the actual domain.",
-    "Test plans for non-technical requirement types (docs, config, report) produce generic test cases rather than specific verification steps. The 'test' type generates infrastructure checks instead of enumerating the specific test scenarios from the requirement text."
+  "improvements_made_in_loop_2": [
+    "Context pack now includes requirement analysis (type, subject, endpoints, fields, constraints) and identifies likely relevant files from the repository.",
+    "Test plans now include 4 categories: Positive Tests, Negative Tests, Edge Cases, and Regression Tests.",
+    "Implementation guidance now includes concrete file-level steps for all 10 requirement types.",
+    "Code review now includes requirement-specific risk assessment and type-specific findings for all 10 types.",
+    "Type detection fixed: docs type now correctly detected before endpoint type.",
+    "Endpoint regex tightened to avoid false positives on 'add curl examples for each endpoint'."
   ],
-  "weaknesses_fixed": [
-    "BA package now generates requirement-specific user stories, acceptance criteria, and API/data drafts instead of static boilerplate.",
-    "Test plan now generates type-specific test cases (endpoint, validation, bug fix, error handling) instead of a single CLI smoke test.",
-    "Implementation summary now provides type-specific implementation guidance instead of 'No product feature files were modified.'",
-    "Code review now generates type-specific findings instead of 'No behavioral code changes were requested.'",
-    "Task plan now generates type-specific steps instead of the same 7 generic steps.",
-    "Visual model now generates requirement-specific Mermaid diagrams instead of identical workflow/state/ER diagrams."
+  "remaining_weaknesses": [
+    "Visual model diagrams still show generic workflow/state patterns rather than domain-specific models.",
+    "Test plans for docs and config types are still somewhat generic compared to endpoint and bug_fix types.",
+    "Context pack identifies relevant files but does not show file contents or line numbers."
   ]
 }

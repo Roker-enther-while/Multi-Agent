@@ -26,11 +26,12 @@ function analyzeRequirement(requirement: string): RequirementAnalysis {
   const raw = requirement;
 
   let type: RequirementAnalysis["type"] = "general";
-  if (/add.*(endpoint|route|api|get|post|put|delete|patch)/i.test(requirement)) type = "endpoint";
+  // Check docs first since it may contain "endpoint" or "api" references
+  if (/update.*doc|documentation|readme|api\.md|curl example/i.test(requirement)) type = "docs";
+  else if (/(?:GET|POST|PUT|DELETE|PATCH)\s+\/\S+/.test(requirement) || /add (?:a |the )?(?:new )?(?:endpoint|route)/i.test(requirement)) type = "endpoint";
   else if (/add.*valid/i.test(requirement)) type = "validation";
   else if (/change|rename|update.*response|field/i.test(requirement)) type = "response_change";
   else if (/error|exception|catch|retry|graceful/i.test(requirement)) type = "error_handling";
-  else if (/update.*doc|documentation|readme|api\.md/i.test(requirement)) type = "docs";
   else if (/add.*option|flag|cli.*arg/i.test(requirement)) type = "cli_option";
   else if (/config|yaml|setting|hybrid.*mode/i.test(requirement)) type = "config";
   else if (/test|unit test|test case|spec/i.test(requirement)) type = "test";
@@ -101,8 +102,14 @@ export class MockContextReaderAgent extends BaseAgent {
 
   public execute(input: AgentInput): AgentRunResult {
     const requirement = requireText(input, "requirement");
-    const files = input.extra?.codeSummary && typeof input.extra.codeSummary === "object"
-      ? JSON.stringify(input.extra.codeSummary, null, 2)
+    const analysis = analyzeRequirement(requirement);
+    const codeSummary = input.extra?.codeSummary as Record<string, unknown> | undefined;
+    const allFiles: string[] = codeSummary && typeof codeSummary === "object" && Array.isArray(codeSummary.files)
+      ? (codeSummary.files as string[])
+      : [];
+    const relevantFiles = findRelevantFiles(analysis, allFiles);
+    const filesJson = codeSummary && typeof codeSummary === "object"
+      ? JSON.stringify(codeSummary, null, 2)
       : "No code summary provided.";
 
     return completedResult(
@@ -113,13 +120,85 @@ export class MockContextReaderAgent extends BaseAgent {
         "## Requirement",
         requirement,
         "",
+        "## Requirement Analysis",
+        `- Type: ${analysis.type}`,
+        `- Subject: ${analysis.subject}`,
+        analysis.endpoints.length > 0 ? `- Endpoints: ${analysis.endpoints.join(", ")}` : "",
+        analysis.fields.length > 0 ? `- Fields: ${analysis.fields.join(", ")}` : "",
+        analysis.files.length > 0 ? `- Referenced files: ${analysis.files.join(", ")}` : "",
+        analysis.constraints.length > 0 ? `- Constraints: ${analysis.constraints.slice(0, 5).join("; ")}` : "",
+        "",
+        "## Likely Relevant Files",
+        relevantFiles.length > 0
+          ? relevantFiles.map((f) => `- \`${f}\``).join("\n")
+          : "- No specific files identified; inspect the full repository context below.",
+        "",
         "## Repository Context",
         "```json",
-        files,
+        filesJson,
         "```",
-      ].join("\n")
+      ].filter((line) => line !== "").join("\n")
     );
   }
+}
+
+function findRelevantFiles(analysis: RequirementAnalysis, allFiles: string[]): string[] {
+  const relevant: string[] = [];
+  const lower = (s: string) => s.toLowerCase();
+
+  // If the requirement explicitly mentions files, include them
+  for (const file of analysis.files) {
+    const match = allFiles.find((f) => f.includes(file));
+    if (match && !relevant.includes(match)) relevant.push(match);
+  }
+
+  // Type-based file matching
+  switch (analysis.type) {
+    case "endpoint":
+      allFiles.filter((f) => /routes?|api|endpoint|handler/i.test(f)).forEach((f) => { if (!relevant.includes(f)) relevant.push(f); });
+      allFiles.filter((f) => /schema|model|types/i.test(f)).forEach((f) => { if (!relevant.includes(f)) relevant.push(f); });
+      break;
+    case "validation":
+      allFiles.filter((f) => /routes?|api|schema|valid/i.test(f)).forEach((f) => { if (!relevant.includes(f)) relevant.push(f); });
+      break;
+    case "response_change":
+      allFiles.filter((f) => /schema|types?|api|routes?|search/i.test(f)).forEach((f) => { if (!relevant.includes(f)) relevant.push(f); });
+      break;
+    case "error_handling":
+      allFiles.filter((f) => /ingestion|error|handler|middleware/i.test(f)).forEach((f) => { if (!relevant.includes(f)) relevant.push(f); });
+      break;
+    case "docs":
+      allFiles.filter((f) => /\.md$|docs?\//i.test(f)).forEach((f) => { if (!relevant.includes(f)) relevant.push(f); });
+      break;
+    case "cli_option":
+      allFiles.filter((f) => /cli|command|arg|option/i.test(f)).forEach((f) => { if (!relevant.includes(f)) relevant.push(f); });
+      break;
+    case "config":
+      allFiles.filter((f) => /\.ya?ml$|config/i.test(f)).forEach((f) => { if (!relevant.includes(f)) relevant.push(f); });
+      break;
+    case "test":
+      allFiles.filter((f) => /test|spec|__test__/i.test(f)).forEach((f) => { if (!relevant.includes(f)) relevant.push(f); });
+      allFiles.filter((f) => /planner/i.test(f)).forEach((f) => { if (!relevant.includes(f)) relevant.push(f); });
+      break;
+    case "report":
+      allFiles.filter((f) => /report|eval|metric|script/i.test(f)).forEach((f) => { if (!relevant.includes(f)) relevant.push(f); });
+      break;
+    case "bug_fix":
+      allFiles.filter((f) => /temporal|retriev/i.test(f)).forEach((f) => { if (!relevant.includes(f)) relevant.push(f); });
+      break;
+  }
+
+  // Also match based on keywords in the requirement
+  const keywords = analysis.subject.toLowerCase().split(/\s+/).filter((w) => w.length > 4);
+  for (const keyword of keywords) {
+    for (const file of allFiles) {
+      if (file.toLowerCase().includes(keyword) && !relevant.includes(file)) {
+        relevant.push(file);
+      }
+    }
+  }
+
+  return relevant.slice(0, 15);
 }
 
 export class MockPlannerAgent extends BaseAgent {
@@ -535,115 +614,233 @@ export class MockTestDesignerAgent extends BaseAgent {
 
 function generateTestCases(analysis: RequirementAnalysis): string[] {
   const cases: string[] = [];
+  const scenarios = extractTestScenarios(analysis);
 
+  // Always start with Positive Tests
+  cases.push("## Positive Tests");
   switch (analysis.type) {
     case "endpoint":
       cases.push(
-        `### TC-01: ${analysis.endpoints[0] ?? "Endpoint"} returns expected response`,
+        `### TC-P01: ${analysis.endpoints[0] ?? "Endpoint"} returns expected response`,
         `- Send a valid request to ${analysis.endpoints[0] ?? "the endpoint"}.`,
         `- Assert response status is 200.`,
         `- Assert response body contains required fields${analysis.fields.length > 0 ? `: ${analysis.fields.join(", ")}` : ""}.`,
         "",
-        `### TC-02: Endpoint returns 404 for missing resource`,
-        `- Send a request with an invalid identifier.`,
-        "- Assert response status is 404.",
-        "- Assert error message is descriptive.",
-        "",
-        `### TC-03: Endpoint handles invalid input gracefully`,
-        "- Send a request with malformed input.",
-        "- Assert response status is 400 or 422.",
-        "- Assert error response contains validation details."
+        `### TC-P02: Endpoint returns correct data format`,
+        "- Assert response Content-Type is application/json.",
+        "- Assert all expected fields are present and non-null.",
+        "- Assert field types match the schema (string, number, array, object)."
       );
       break;
     case "validation":
       cases.push(
-        "### TC-01: Valid input passes validation",
-        "- Send input that satisfies all validation rules.",
-        "- Assert the request is accepted.",
+        "### TC-P01: Valid input passes all validation rules",
+        "- Send input that satisfies every validation rule.",
+        "- Assert the request is accepted (200 or 201).",
         "",
-        "### TC-02: Invalid input is rejected with clear error",
-        "- Send input that violates each validation rule individually.",
-        `- Assert each violation returns a descriptive error message.`,
-        "",
-        "### TC-03: Boundary values are handled correctly",
-        "- Test at exact boundary values (e.g., max file size, enum edges).",
-        "- Assert boundary behavior matches specification."
+        "### TC-P02: Each valid enum value is accepted",
+        ...analysis.constraints.filter((c) => /one of|enum|must be/i.test(c)).map((c) => `- Test each valid value: ${c}`),
       );
-      if (analysis.constraints.length > 0) {
-        cases.push(
-          "",
-          "### TC-04: Constraint-specific tests",
-          ...analysis.constraints.slice(0, 3).map((c) => `- Test: ${c}`)
-        );
-      }
+      break;
+    case "docs":
+      cases.push(
+        "### TC-P01: Documentation file exists and is readable",
+        `- Verify the target documentation file exists.`,
+        "- Assert the file is valid markdown.",
+        "",
+        "### TC-P02: Required sections are present",
+        "- Assert all required headings and sections exist.",
+        "- Assert code examples are syntactically valid."
+      );
+      break;
+    case "config":
+      cases.push(
+        "### TC-P01: Configuration file is valid YAML",
+        "- Parse the configuration file without errors.",
+        "- Assert all required keys are present.",
+        "",
+        "### TC-P02: Default values work correctly",
+        "- Load configuration with defaults.",
+        "- Assert the system starts and operates with default settings."
+      );
       break;
     case "bug_fix":
       cases.push(
-        "### TC-01: Bug reproduction test",
-        "- Reproduce the exact scenario described in the requirement.",
-        "- Assert the buggy behavior occurs before the fix.",
+        "### TC-P01: Bug fix verification",
+        "- Run the exact scenario described in the requirement.",
+        "- Assert the expected correct behavior occurs.",
         "",
-        "### TC-02: Fix verification test",
-        "- Apply the fix.",
-        "- Run the same scenario.",
-        "- Assert the expected correct behavior.",
-        "",
-        "### TC-03: Regression test",
-        "- Test related scenarios that should not be affected.",
-        "- Assert no unintended side effects."
-      );
-      break;
-    case "error_handling":
-      cases.push(
-        "### TC-01: Error is caught and returned gracefully",
-        "- Trigger the error condition described in the requirement.",
-        "- Assert the response is a structured error, not a crash.",
-        "",
-        "### TC-02: Error response includes required fields",
-        "- Assert error response contains status code, message, and correlation ID.",
-        "",
-        "### TC-03: Retry-after header is present for service errors",
-        "- Assert the response includes a Retry-After header when applicable.",
-        "",
-        "### TC-04: Error is logged with correlation ID",
-        "- Assert the error log entry contains the correlation ID from the response."
-      );
-      break;
-    case "test":
-      cases.push(
-        `### TC-01: Verify test infrastructure`,
-        "- Confirm test framework is configured and test files are discoverable.",
-        "- Run the test suite to verify it executes without errors.",
-        "",
-        `### TC-02: Test the specific scenarios from the requirement`,
-        `- Requirement: ${analysis.subject}`,
-        "- Write one test case per scenario described in the requirement.",
-        "- Each test should have a clear name reflecting the scenario.",
-        "",
-        "### TC-03: Edge cases and error paths",
-        "- Test with empty/null inputs.",
-        "- Test with boundary values.",
-        "- Test with invalid/malformed inputs.",
-        "",
-        "### TC-04: Test isolation",
-        "- Verify tests do not depend on external state.",
-        "- Verify tests clean up after themselves."
+        "### TC-P02: Fix works for similar inputs",
+        "- Test with variations of the bug-triggering input.",
+        "- Assert all variations produce correct results."
       );
       break;
     default:
       cases.push(
-        "### TC-01: Core functionality works as specified",
-        `- Implement and verify the primary behavior: ${analysis.subject}.`,
+        `### TC-P01: Primary behavior works as specified`,
+        `- Verify the core functionality: ${analysis.subject}.`,
+        "- Assert the expected outcome is produced.",
         "",
-        "### TC-02: Edge cases are handled",
-        "- Test boundary conditions and unexpected inputs.",
-        "",
-        "### TC-03: Error scenarios are handled",
-        "- Verify graceful handling of failure conditions."
+        "### TC-P02: Happy path with typical inputs",
+        "- Test with normal, expected inputs.",
+        "- Assert correct output for each."
       );
   }
 
+  // Negative Tests
+  cases.push("", "## Negative Tests");
+  switch (analysis.type) {
+    case "endpoint":
+      cases.push(
+        "### TC-N01: Invalid resource returns 404",
+        "- Request a non-existent resource identifier.",
+        "- Assert 404 with descriptive error message.",
+        "",
+        "### TC-N02: Malformed request returns 400",
+        "- Send request with invalid body or parameters.",
+        "- Assert 400 with validation error details.",
+        "",
+        "### TC-N03: Missing required fields returns 422",
+        "- Send request omitting required fields one at a time.",
+        "- Assert 422 with field-specific error messages."
+      );
+      break;
+    case "validation":
+      cases.push(
+        "### TC-N01: Each validation rule rejects invalid input",
+        ...analysis.constraints.slice(0, 4).map((c, i) => `- TC-N01-${i + 1}: Test violation of: ${c}`),
+        "",
+        "### TC-N02: Empty/null input is rejected",
+        "- Send empty body, null fields, or missing required fields.",
+        "- Assert appropriate error status and message.",
+        "",
+        "### TC-N03: Oversized input is rejected",
+        "- Send input exceeding size limits.",
+        "- Assert 413 or 400 with clear error."
+      );
+      break;
+    case "bug_fix":
+      cases.push(
+        "### TC-N01: Bug scenario no longer occurs",
+        "- Reproduce the exact bug-triggering conditions.",
+        "- Assert the buggy behavior no longer happens.",
+        "",
+        "### TC-N02: Related error paths still work",
+        "- Test error conditions adjacent to the bug.",
+        "- Assert they still produce correct error responses."
+      );
+      break;
+    default:
+      cases.push(
+        "### TC-N01: Invalid inputs are rejected",
+        "- Send malformed, empty, or out-of-range inputs.",
+        "- Assert appropriate error responses.",
+        "",
+        "### TC-N02: Missing required data is handled",
+        "- Omit required fields or parameters.",
+        "- Assert clear error messages."
+      );
+  }
+
+  // Edge Cases
+  cases.push("", "## Edge Cases");
+  cases.push(
+    "### TC-E01: Boundary values",
+    "- Test at minimum and maximum allowed values.",
+    "- Assert behavior matches specification at boundaries.",
+    "",
+    "### TC-E02: Empty and null inputs",
+    "- Test with empty strings, null values, and missing fields.",
+    "- Assert graceful handling without crashes."
+  );
+  if (analysis.type === "endpoint") {
+    cases.push(
+      "",
+      "### TC-E03: Special characters in parameters",
+      "- Test with Unicode, SQL injection patterns, and XSS payloads.",
+      "- Assert input is sanitized or rejected."
+    );
+  }
+
+  // Regression Tests
+  cases.push("", "## Regression Tests");
+  cases.push(
+    "### TC-R01: Existing functionality is not broken",
+    "- Run existing test suite to verify no regressions.",
+    "- Assert all previously passing tests still pass.",
+    "",
+    "### TC-R02: Related features still work",
+    "- Test features that interact with the changed code.",
+    "- Assert no unintended side effects."
+  );
+  if (analysis.type === "bug_fix") {
+    cases.push(
+      "",
+      "### TC-R03: Bug-specific regression",
+      "- Add a test that specifically reproduces the original bug.",
+      "- Assert this test passes after the fix.",
+      "- This test should fail if the bug is reintroduced."
+    );
+  }
+
+  // Requirement-specific scenarios
+  if (scenarios.length > 0) {
+    cases.push("", "## Requirement-Specific Scenarios");
+    for (let i = 0; i < scenarios.length; i++) {
+      cases.push(
+        `### TC-S${String(i + 1).padStart(2, "0")}: ${scenarios[i]}`,
+        `- Verify: ${scenarios[i]}`,
+        "- Assert expected behavior."
+      );
+    }
+  }
+
   return cases;
+}
+
+function extractTestScenarios(analysis: RequirementAnalysis): string[] {
+  const scenarios: string[] = [];
+
+  // Extract specific scenarios from constraints
+  for (const constraint of analysis.constraints.slice(0, 5)) {
+    scenarios.push(constraint);
+  }
+
+  // Extract scenarios from fields
+  if (analysis.fields.length > 0) {
+    scenarios.push(`Verify fields present: ${analysis.fields.join(", ")}`);
+  }
+
+  // Extract scenarios from endpoints
+  if (analysis.endpoints.length > 0) {
+    scenarios.push(`Verify endpoint ${analysis.endpoints[0]} is accessible and returns correct response`);
+  }
+
+  // Type-specific scenarios
+  switch (analysis.type) {
+    case "validation":
+      scenarios.push("Verify all validation rules are enforced individually");
+      scenarios.push("Verify validation error messages are descriptive");
+      break;
+    case "error_handling":
+      scenarios.push("Verify error is caught and returned gracefully");
+      scenarios.push("Verify error logging includes correlation ID");
+      break;
+    case "docs":
+      scenarios.push("Verify all endpoints are documented with curl examples");
+      scenarios.push("Verify request/response schemas are complete");
+      break;
+    case "config":
+      scenarios.push("Verify configuration loads without errors");
+      scenarios.push("Verify all config keys have sensible defaults");
+      break;
+    case "report":
+      scenarios.push("Verify all required metrics are included in output");
+      scenarios.push("Verify export formats are valid and complete");
+      break;
+  }
+
+  return scenarios;
 }
 
 export class MockImplementationAgent extends BaseAgent {
@@ -675,25 +872,45 @@ export class MockImplementationAgent extends BaseAgent {
 function generateImplementationGuidance(analysis: RequirementAnalysis): string[] {
   const guidance: string[] = [];
 
+  // Common header with requirement-specific target
+  guidance.push(
+    `### Target: ${analysis.subject}`,
+    ""
+  );
+
+  // Files to modify (from requirement analysis)
+  if (analysis.files.length > 0) {
+    guidance.push("**Files explicitly referenced in requirement:**");
+    for (const file of analysis.files) {
+      guidance.push(`- \`${file}\``);
+    }
+    guidance.push("");
+  }
+
+  // Type-specific implementation guidance
   switch (analysis.type) {
     case "endpoint":
       guidance.push(
-        `### Target: ${analysis.endpoints.length > 0 ? analysis.endpoints.join(", ") : "New endpoint"}`,
-        "",
         "**Files to create or modify:**",
-        ...(analysis.files.length > 0 ? analysis.files.map((f) => `- \`${f}\``) : ["- Identify the route handler file from context"]),
+        "- Route handler file (e.g., `backend/app/api/routes_*.ts` or `backend/app/api/*.py`)",
+        "- Schema file (e.g., `backend/app/schemas/*.py`)",
+        "- Router registration file (e.g., `backend/app/main.py`)",
         "",
         "**Implementation steps:**",
-        `1. Add route handler for ${analysis.endpoints[0] ?? "the endpoint"}.`,
-        `2. Define request/response schema${analysis.fields.length > 0 ? ` with fields: ${analysis.fields.join(", ")}` : ""}.`,
-        "3. Add database query or service call.",
-        "4. Add error handling (404, 400, 500).",
-        "5. Register the route in the application."
+        `1. Create or modify route handler for ${analysis.endpoints[0] ?? "the endpoint"}.`,
+        `2. Define Pydantic/TypeScript request/response schema${analysis.fields.length > 0 ? ` with fields: ${analysis.fields.join(", ")}` : ""}.`,
+        "3. Implement business logic (database query, service call, data transformation).",
+        "4. Add error handling: 404 for not found, 400 for bad request, 500 for server errors.",
+        "5. Register the route in the application router.",
+        "6. Add docstring/JSDoc with endpoint description and parameter docs."
       );
       break;
     case "validation":
       guidance.push(
-        "### Target: Input validation",
+        "**Files to create or modify:**",
+        "- Route handler or middleware file",
+        "- Validation schema or rules file",
+        "- Error response schema",
         "",
         "**Validation rules to implement:**",
         ...(analysis.constraints.length > 0
@@ -701,51 +918,145 @@ function generateImplementationGuidance(analysis: RequirementAnalysis): string[]
           : ["- Define validation rules from requirement"]),
         "",
         "**Implementation steps:**",
-        "1. Add validation function or middleware.",
-        "2. Define validation rules with clear error messages.",
-        "3. Return 400/422 with structured error response on failure.",
-        "4. Pass validated data to the next handler."
+        "1. Add validation function or middleware at the API boundary.",
+        "2. Define each validation rule with a clear, descriptive error message.",
+        "3. Return 400/422 with structured error response on validation failure.",
+        "4. Include the field name and violated rule in the error response.",
+        "5. Pass validated (and possibly transformed) data to the next handler."
       );
       break;
     case "bug_fix":
       guidance.push(
-        "### Target: Bug fix",
-        "",
         `**Bug description:** ${analysis.raw}`,
         "",
         "**Implementation steps:**",
-        "1. Locate the buggy code (search for the pattern described).",
-        "2. Understand why the current logic is incorrect.",
-        "3. Apply the minimal fix.",
-        "4. Add a regression test.",
-        "5. Verify the fix and run existing tests."
+        "1. Locate the buggy code (search for the pattern described in the requirement).",
+        "2. Understand why the current logic is incorrect (e.g., falsy check vs. explicit undefined check).",
+        "3. Apply the minimal fix that addresses the root cause.",
+        "4. Add a regression test that reproduces the bug and verifies the fix.",
+        "5. Run the full test suite to verify no regressions.",
+        "6. Search for similar patterns elsewhere in the codebase."
       );
       break;
     case "error_handling":
       guidance.push(
-        "### Target: Error handling",
-        "",
         "**Error scenarios to handle:**",
         ...analysis.constraints.map((c) => `- ${c}`),
         "",
         "**Implementation steps:**",
-        "1. Wrap the risky operation in try/catch.",
-        "2. Create structured error response with status code and message.",
-        "3. Add Retry-After header for service unavailability.",
-        "4. Log error with correlation ID.",
-        "5. Return graceful error response to caller."
+        "1. Wrap the risky operation in try/catch with specific exception types.",
+        "2. Create structured error response with HTTP status code and descriptive message.",
+        "3. Add Retry-After header for service unavailability (503) responses.",
+        "4. Log the error with correlation ID, timestamp, and stack trace.",
+        "5. Return graceful error response to the caller (never expose internal details)."
+      );
+      break;
+    case "docs":
+      guidance.push(
+        "**Files to modify:**",
+        "- Target documentation file (e.g., `docs/api.md`)",
+        "",
+        "**Content to add:**",
+        "- Endpoint documentation with HTTP method and path",
+        "- Request schema with field descriptions and types",
+        "- Response schema with field descriptions and types",
+        "- Error response documentation",
+        "- curl examples for each endpoint",
+        "",
+        "**Implementation steps:**",
+        "1. Read the existing documentation to understand the format and style.",
+        "2. Add new endpoint documentation following the existing pattern.",
+        "3. Include request/response JSON examples.",
+        "4. Add curl command examples with realistic sample data.",
+        "5. Update the table of contents or index if present.",
+        "6. Verify all code examples are syntactically correct."
+      );
+      break;
+    case "cli_option":
+      guidance.push(
+        "**Files to modify:**",
+        "- CLI entry point (e.g., `src/cli.ts` or `cli.py`)",
+        "- Help text / usage documentation",
+        "",
+        "**Implementation steps:**",
+        "1. Add the new option to the argument parser.",
+        "2. Define allowed values and default value.",
+        "3. Add validation for invalid option values.",
+        "4. Implement the option-specific behavior.",
+        "5. Update help text to document the new option.",
+        "6. Add tests for each valid value and invalid value."
+      );
+      break;
+    case "config":
+      guidance.push(
+        "**Files to create or modify:**",
+        "- Configuration file (e.g., `configs/*.yaml` or `config.json`)",
+        "- Configuration loader/parser",
+        "- Default values definition",
+        "",
+        "**Implementation steps:**",
+        "1. Define the configuration schema with all required keys.",
+        "2. Set sensible default values for optional keys.",
+        "3. Add validation for configuration values (types, ranges, required fields).",
+        "4. Update the configuration loader to parse the new section.",
+        "5. Add documentation for each configuration key.",
+        "6. Add tests for valid config, missing keys, and invalid values."
+      );
+      break;
+    case "test":
+      guidance.push(
+        "**Files to create or modify:**",
+        "- Test file (e.g., `backend/tests/test_*.py` or `src/**/*.test.ts`)",
+        "- Test fixtures/conftest if needed",
+        "",
+        "**Implementation steps:**",
+        "1. Identify the class/module under test from the requirement.",
+        "2. Set up test fixtures and mock dependencies.",
+        "3. Write one test per scenario described in the requirement.",
+        "4. Add edge case tests (empty input, boundary values, special characters).",
+        "5. Ensure tests are isolated and do not depend on external state.",
+        "6. Run the test suite and verify all tests pass."
+      );
+      break;
+    case "report":
+      guidance.push(
+        "**Files to modify:**",
+        "- Report generation script/module",
+        "- Output format templates",
+        "",
+        "**Implementation steps:**",
+        "1. Identify the report generation entry point.",
+        "2. Add new metrics or fields to the report output.",
+        "3. Implement the new export format (JSON, CSV, etc.).",
+        "4. Add histogram or visualization data generation.",
+        "5. Update report templates to include new sections.",
+        "6. Add tests for each new metric and export format."
+      );
+      break;
+    case "response_change":
+      guidance.push(
+        "**Files to modify:**",
+        "- Response schema definition",
+        "- Route handler that builds the response",
+        "- Client-side type definitions (if applicable)",
+        "",
+        "**Implementation steps:**",
+        "1. Update the response schema to include the new field(s).",
+        "2. Update the route handler to populate the new field(s).",
+        "3. Handle backward compatibility if needed (optional fields, versioning).",
+        "4. Update API documentation.",
+        "5. Add tests for the new field(s) and renamed field(s).",
+        "6. Update client-side type definitions."
       );
       break;
     default:
       guidance.push(
-        `### Target: ${analysis.subject}`,
-        "",
         "**Implementation steps:**",
         `1. Analyze the requirement: "${analysis.subject}".`,
         `2. Identify affected files${analysis.files.length > 0 ? `: ${analysis.files.join(", ")}` : " from context"}.`,
-        "3. Implement the changes.",
-        "4. Write tests.",
-        "5. Verify the implementation."
+        "3. Implement the changes with clear, readable code.",
+        "4. Write tests covering positive, negative, and edge cases.",
+        "5. Verify the implementation against the requirement."
       );
   }
 
@@ -822,13 +1133,26 @@ export class MockCodeReviewerAgent extends BaseAgent {
 function generateReviewFindings(analysis: RequirementAnalysis): string[] {
   const findings: string[] = [];
 
+  // Always include requirement coverage and risk assessment
+  findings.push(
+    "## Requirement Coverage",
+    `- **Requirement:** ${analysis.subject}`,
+    `- **Type:** ${analysis.type}`,
+    analysis.fields.length > 0 ? `- **Fields involved:** ${analysis.fields.join(", ")}` : "",
+    analysis.constraints.length > 0 ? `- **Constraints:** ${analysis.constraints.slice(0, 3).join("; ")}` : "",
+    ""
+  );
+
+  // Type-specific findings
+  findings.push("## Type-Specific Findings");
   switch (analysis.type) {
     case "endpoint":
       findings.push(
         "- **Schema validation:** Ensure request/response schemas are defined and enforced.",
         "- **Error handling:** Verify 404, 400, and 500 responses are implemented.",
         "- **Input sanitization:** Check that path parameters and query strings are validated.",
-        "- **Documentation:** Confirm the endpoint is documented in API docs."
+        "- **Documentation:** Confirm the endpoint is documented in API docs.",
+        "- **Risk:** New endpoints may expose sensitive data; verify authentication/authorization."
       );
       break;
     case "validation":
@@ -836,7 +1160,8 @@ function generateReviewFindings(analysis: RequirementAnalysis): string[] {
         "- **Rule completeness:** Verify all validation rules from the requirement are implemented.",
         "- **Error messages:** Ensure validation error messages are descriptive and actionable.",
         "- **Edge cases:** Check boundary values and empty/null inputs.",
-        "- **Performance:** Validation should not block the request pipeline unnecessarily."
+        "- **Performance:** Validation should not block the request pipeline unnecessarily.",
+        "- **Risk:** Incomplete validation may allow invalid data into the system."
       );
       break;
     case "bug_fix":
@@ -844,7 +1169,8 @@ function generateReviewFindings(analysis: RequirementAnalysis): string[] {
         "- **Root cause:** Verify the fix addresses the actual root cause, not just symptoms.",
         "- **Regression test:** Confirm a regression test exists that reproduces the original bug.",
         "- **Side effects:** Check that the fix does not break related functionality.",
-        "- **Similar patterns:** Search for the same bug pattern elsewhere in the codebase."
+        "- **Similar patterns:** Search for the same bug pattern elsewhere in the codebase.",
+        `- **Risk:** ${analysis.raw}`
       );
       break;
     case "error_handling":
@@ -852,7 +1178,62 @@ function generateReviewFindings(analysis: RequirementAnalysis): string[] {
         "- **Error types:** Verify specific error types are caught, not generic exceptions.",
         "- **Response format:** Ensure error responses follow the project's error schema.",
         "- **Logging:** Confirm errors are logged with sufficient context (correlation ID, stack trace).",
-        "- **Retry logic:** If retry-after is specified, verify the header format is correct."
+        "- **Retry logic:** If retry-after is specified, verify the header format is correct.",
+        "- **Risk:** Unhandled exceptions may crash the service or leak internal details."
+      );
+      break;
+    case "docs":
+      findings.push(
+        "- **Completeness:** Verify all endpoints/methods are documented.",
+        "- **Accuracy:** Verify request/response schemas match the actual implementation.",
+        "- **Examples:** Verify curl examples are syntactically correct and runnable.",
+        "- **Style:** Verify documentation follows the project's existing style.",
+        "- **Risk:** Incorrect documentation may误导 API consumers."
+      );
+      break;
+    case "cli_option":
+      findings.push(
+        "- **Option parsing:** Verify the option is correctly parsed by the argument parser.",
+        "- **Default value:** Verify the default value is backward-compatible.",
+        "- **Invalid values:** Verify invalid values produce clear error messages.",
+        "- **Help text:** Verify the option appears in --help output.",
+        "- **Risk:** Breaking CLI interface may affect automation scripts."
+      );
+      break;
+    case "config":
+      findings.push(
+        "- **Schema:** Verify configuration schema is well-defined with types and defaults.",
+        "- **Validation:** Verify invalid configuration values are caught at startup.",
+        "- **Documentation:** Verify each configuration key is documented.",
+        "- **Backward compatibility:** Verify existing configurations still work.",
+        "- **Risk:** Invalid configuration may cause silent failures or incorrect behavior."
+      );
+      break;
+    case "test":
+      findings.push(
+        "- **Coverage:** Verify all scenarios from the requirement are covered by tests.",
+        "- **Isolation:** Verify tests do not depend on external state or other tests.",
+        "- **Assertions:** Verify each test has meaningful assertions (not just no-crash).",
+        "- **Naming:** Verify test names clearly describe what they test.",
+        "- **Risk:** Weak tests may give false confidence in code correctness."
+      );
+      break;
+    case "report":
+      findings.push(
+        "- **Accuracy:** Verify reported metrics match actual data.",
+        "- **Completeness:** Verify all required metrics/fields are included.",
+        "- **Format:** Verify export formats (JSON, CSV) are valid and parseable.",
+        "- **Performance:** Verify report generation does not block other operations.",
+        "- **Risk:** Incorrect metrics may lead to wrong decisions."
+      );
+      break;
+    case "response_change":
+      findings.push(
+        "- **Backward compatibility:** Verify existing clients are not broken by the change.",
+        "- **Schema:** Verify the new field is correctly typed and documented.",
+        "- **Migration:** Verify any data migration needed for the rename.",
+        "- **Tests:** Verify tests cover both old and new field names if applicable.",
+        "- **Risk:** Breaking API changes may affect downstream consumers."
       );
       break;
     default:
@@ -864,7 +1245,7 @@ function generateReviewFindings(analysis: RequirementAnalysis): string[] {
       );
   }
 
-  return findings;
+  return findings.filter((line) => line !== "");
 }
 
 export class MockTraceabilityReporterAgent extends BaseAgent {

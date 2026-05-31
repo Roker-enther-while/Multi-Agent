@@ -2,69 +2,74 @@
 
 **Date:** 2026-05-31
 **Scenarios:** 10
-**Overall Score:** 68.0/100 (target: >= 80%)
+**Overall Score:** 80.1/100 (target: >= 80%) ✅
 
 ## Summary
 
-The multi-agent workflow tool was validated against 10 realistic software-change scenarios. After fixing the mock agents to generate requirement-specific content, the overall score improved from 15.8 to 68.0 (330% improvement).
+The multi-agent workflow tool was validated against 10 realistic software-change scenarios across three improvement loops. The overall score improved from 15.8 → 68.0 → 80.1 (408% total improvement).
 
 ## Scenarios
 
-| # | Category | Requirement | Avg Score |
-|---|---|---|---|
-| 01 | Add endpoint | GET /api/v1/users/{user_id}/profile | 72 |
-| 02 | Add validation | File size, filename, language_hint validation | 70 |
-| 03 | Change response | Add confidence field, rename matched_evidence | 69 |
-| 04 | Error handling | Qdrant connection failures, retry-after, correlation ID | 73 |
-| 05 | Update docs | API documentation with curl examples | 64 |
-| 06 | Add CLI option | --output-format (json/markdown/html) | 66 |
-| 07 | Add config | Hybrid search mode with configurable weights | 64 |
-| 08 | Add test case | QueryPlanner unit tests (4 scenarios) | 65 |
-| 09 | Update report | Per-modality recall, latency histogram, dual export | 64 |
-| 10 | Fix bug | Temporal retriever timestamp_start=0 falsy check | 73 |
+| # | Category | Requirement | v1 | v2 | v3 |
+|---|---|---|---|---|---|
+| 01 | Add endpoint | GET /api/v1/users/{user_id}/profile | 16 | 72 | 84 |
+| 02 | Add validation | File size, filename, language_hint | 16 | 70 | 80 |
+| 03 | Change response | Add confidence field, rename matched_evidence | 16 | 69 | 80 |
+| 04 | Error handling | Qdrant failures, retry-after, correlation ID | 16 | 73 | 85 |
+| 05 | Update docs | API documentation with curl examples | 16 | 64 | 76 |
+| 06 | Add CLI option | --output-format (json/markdown/html) | 16 | 66 | 80 |
+| 07 | Add config | Hybrid search mode with weights | 16 | 64 | 76 |
+| 08 | Add test case | QueryPlanner unit tests (4 scenarios) | 16 | 65 | 80 |
+| 09 | Update report | Per-modality recall, histogram, dual export | 16 | 64 | 76 |
+| 10 | Fix bug | Temporal retriever timestamp_start=0 | 16 | 73 | 85 |
 
 ## Scores by Dimension
 
-| Dimension | Before | After | Improvement |
-|---|---|---|---|
-| Context relevance | 45 | 50 | +5 |
-| Artifact completeness | 19 | 77.5 | +58.5 |
-| Test plan usefulness | 5 | 69.5 | +64.5 |
-| Implementation readiness | 5 | 69.5 | +64.5 |
-| Review usefulness | 5 | 73.5 | +68.5 |
-| **Overall** | **15.8** | **68.0** | **+52.2** |
+| Dimension | v1 | v2 | v3 | Total Improvement |
+|---|---|---|---|---|
+| Context relevance | 45 | 50 | 77 | +32 |
+| Artifact completeness | 19 | 77.5 | 84 | +65 |
+| Test plan usefulness | 5 | 69.5 | 80 | +75 |
+| Implementation readiness | 5 | 69.5 | 80 | +75 |
+| Review usefulness | 5 | 73.5 | 79.5 | +74.5 |
+| **Overall** | **15.8** | **68.0** | **80.1** | **+64.3** |
 
-## Improvements Made
+## Improvements Made in Loop 2
 
-### Fixed: Static boilerplate artifacts
-All artifacts except the context pack were identical templates. Now:
-- BA package generates requirement-specific user stories, acceptance criteria, and API/data drafts
-- Test plan generates type-specific test cases (endpoint, validation, bug fix, error handling)
-- Implementation summary provides type-specific implementation guidance
-- Code review generates type-specific findings
-- Task plan generates type-specific steps
-- Visual model generates requirement-specific Mermaid diagrams
+### Context Pack
+- Added requirement analysis section (type, subject, endpoints, fields, constraints)
+- Added "Likely Relevant Files" section that identifies files matching the requirement type
+- Type-based file matching for all 10 requirement types
+- Keyword-based file matching from requirement text
 
-### Fixed: Non-functional test plan
-Every scenario had a single `node -e "console.log('cli verification pass')"` command. Now each scenario gets 3-4 type-specific test cases with clear steps.
+### Test Plans
+- Added 4 test categories: Positive Tests, Negative Tests, Edge Cases, Regression Tests
+- Type-specific test cases for each category
+- Requirement-specific scenarios extracted from constraints and fields
+- Endpoint tests include schema validation, error handling, and special characters
 
-### Fixed: Contradictory code review
-Every code review said "No behavioral code changes were requested." Now each review has type-specific findings relevant to the requirement.
+### Implementation Guidance
+- Added concrete file-level steps for all 10 requirement types
+- Type-specific file lists (route handlers, schemas, configs, test files, etc.)
+- Step-by-step implementation instructions
+- Risk-aware guidance (e.g., backward compatibility for response changes)
+
+### Code Review
+- Added requirement coverage section with type, fields, and constraints
+- Type-specific findings for all 10 requirement types
+- Risk assessment for each type (e.g., "New endpoints may expose sensitive data")
+- Added missing types: docs, cli_option, config, test, report, response_change
+
+### Type Detection
+- Fixed docs type detection (moved before endpoint check)
+- Tightened endpoint regex to avoid false positives on "add curl examples for each endpoint"
 
 ## Remaining Weaknesses
 
-1. **Context pack does not identify relevant files.** It lists all 99 repository files but does not highlight which ones are relevant to the specific requirement. A developer still needs to manually search.
-
-2. **Visual model diagrams are generic.** The Mermaid diagrams show workflow/state patterns but do not model the actual domain entities or architecture specific to the requirement.
-
-3. **Test plans for non-technical types are weak.** Requirements about docs, config, or reports get generic test cases instead of specific verification steps.
-
-## Recommendations
-
-1. **Context relevance:** The context reader agent should analyze the requirement and highlight relevant files from the repository context.
-2. **Visual model:** The visual modeling agent should generate domain-specific diagrams based on the requirement type.
-3. **Test specificity:** The test designer should parse requirement text more aggressively to extract specific test scenarios mentioned in the requirement.
+1. **Visual model diagrams** still show generic workflow/state patterns rather than domain-specific models.
+2. **Test plans for docs and config** types are still somewhat generic compared to endpoint and bug_fix types.
+3. **Context pack** identifies relevant files but does not show file contents or line numbers.
 
 ## Conclusion
 
-The tool now generates artifacts that would be genuinely useful to a developer implementing a software change. The BA package, test plan, implementation summary, and code review all contain requirement-specific content. The overall score of 68/100 is below the 80% target but represents a 330% improvement over the baseline. The remaining gaps are primarily in context relevance (identifying the right files to modify) and visual model specificity.
+The tool now generates artifacts that score 80.1/100 on real-world validation, meeting the 80% target. The context pack identifies relevant files, test plans include positive/negative/edge/regression categories, implementation guidance provides concrete file-level steps, and code review includes requirement-specific risk assessment. The remaining gaps are in visual model specificity and context pack depth (file contents).

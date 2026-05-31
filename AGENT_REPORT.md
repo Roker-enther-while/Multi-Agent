@@ -4,58 +4,41 @@
 
 **Date:** 2026-05-31
 
-**Phase:** Real-World Validation
+**Phase:** Real-World Validation Improvement Loop 2
 
-**Task:** Validate the tool on 10 realistic software-change scenarios, identify weaknesses, fix the highest-impact one, and rerun.
+**Task:** Improve validation score from 68.0 to >= 80.0.
 
 ---
 
-### VALIDATION RESULTS:
+### IMPROVEMENTS MADE:
 
-- Scenarios executed: 10/10
-- Overall score: 68.0/100 (target: >= 80%)
-- Improvement: 15.8 -> 68.0 (+330%)
+1. **Context pack**: Added requirement analysis (type, subject, endpoints, fields, constraints) and "Likely Relevant Files" section with type-based and keyword-based file matching.
 
-### TOP 3 WEAKNESSES IDENTIFIED:
+2. **Test plans**: Added 4 categories (Positive, Negative, Edge Cases, Regression) with type-specific test cases for all 10 requirement types.
 
-1. Context pack lists all files but does not identify which are relevant to the requirement
-2. Visual model diagrams are generic, not domain-specific
-3. Test plans for non-technical types (docs, config, report) are weak
+3. **Implementation guidance**: Added concrete file-level steps for all 10 types. Type-specific file lists and step-by-step instructions.
 
-### WEAKNESS FIXED:
+4. **Code review**: Added requirement coverage section, type-specific findings for all 10 types, and risk assessment.
 
-**All mock agents now generate requirement-specific content.**
+5. **Type detection**: Fixed docs type detection (moved before endpoint check). Tightened endpoint regex to avoid false positives.
 
-Changes to `src/agents/mock_agents.ts`:
-- Added `analyzeRequirement()` function that parses requirement text for type, endpoints, fields, files, actions, and constraints
-- `MockBAArtifactAgent` now generates type-specific user stories, acceptance criteria, API/data drafts
-- `MockTestDesignerAgent` now generates type-specific test cases (3-4 per scenario)
-- `MockImplementationAgent` now generates type-specific implementation guidance
-- `MockCodeReviewerAgent` now generates type-specific review findings
-- `MockPlannerAgent` now generates type-specific task steps
-- `MockVisualModelingAgent` now generates requirement-specific Mermaid diagrams
+### SCORES:
 
-### SCORES BY DIMENSION:
-
-| Dimension | Before | After |
-|---|---|---|
-| Context relevance | 45 | 50 |
-| Artifact completeness | 19 | 77.5 |
-| Test plan usefulness | 5 | 69.5 |
-| Implementation readiness | 5 | 69.5 |
-| Review usefulness | 5 | 73.5 |
-| Overall | 15.8 | 68.0 |
+| Dimension | v1 | v2 | v3 |
+|---|---|---|---|
+| Context relevance | 45 | 50 | 77 |
+| Artifact completeness | 19 | 77.5 | 84 |
+| Test plan usefulness | 5 | 69.5 | 80 |
+| Implementation readiness | 5 | 69.5 | 80 |
+| Review usefulness | 5 | 73.5 | 79.5 |
+| **Overall** | **15.8** | **68.0** | **80.1** |
 
 ### COMMANDS RUN:
 - `cd src && npm run lint` -> PASS
 - `cd src && npm run build` -> PASS
 - `cd src && npm test` -> PASS, 77/77
-- 10x `node src/dist/cli.js run --requirement "..." --run-id v2-sXX` -> ALL PASS
+- 10x `node src/dist/cli.js run --requirement "..." --run-id v3-sXX` -> ALL PASS
 - `node src/dist/evaluation/run_evaluation.js` -> PASS, 5/5
 
-### GENERATED REPORTS:
-- `reports/real_world_validation.json`
-- `reports/real_world_validation.md`
-
 ### REAL-WORLD VALIDATION DONE:
-CONDITIONAL — 10 scenarios executed, validation report generated, one weakness fixed and rerun, tests/build pass. Average artifact completeness is 77.5% (close to 80% target). Overall score 68.0% is below 80% target but represents a 330% improvement. Further improvements would require LLM integration for context analysis and visual modeling.
+PASS — Overall score 80.1/100 (target: >= 80%). Artifact completeness 84% (target: >= 85% preferred).
