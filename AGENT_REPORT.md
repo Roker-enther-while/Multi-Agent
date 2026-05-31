@@ -4,62 +4,59 @@
 
 **Date:** 2026-05-31
 
-**Phase:** Phase -1 — Workflow Contracts & Artifact Foundation
+**Phase:** Phase 0 - Project Manager Orchestrator Scaffold
 
-**Task:** Create type contracts, project state model, artifact store, and prompt registry.
+**Task:** Create a minimal orchestrator scaffold that proves the PM workflow can manage and document a requirement from input to traceability report.
 
 ---
 
 ### DONE:
-- Created src/types/agents.ts — AgentName, AgentStatus, AgentInput, AgentOutput, AgentRunResult, AgentFinding, AgentDecision
-- Created src/types/artifacts.ts — ArtifactType, WorkflowArtifact, ArtifactRef, ArtifactMetadata
-- Created src/types/workflow.ts — WorkflowPhase, WorkflowStep, WorkflowRun, WorkflowRunStatus, VerificationCommand, VerificationResult, Blocker, ProjectDecision, ScopeLock
-- Created src/state/project_state.ts — Pure state helpers (createInitialProjectState, addArtifact, addDecision, addVerificationResult, addBlocker, completeStep, setNextStep, setWorkflowStatus, addStep, setScopeLock, resolveBlocker, getCurrentStep, getArtifactsByType)
-- Created src/tools/artifact_store.ts — Filesystem artifact store (createRunDirectory, writeArtifact, readArtifact, listArtifacts, sanitizeFilename, path traversal protection)
-- Created src/prompts/index.ts — Prompt registry with all 9 agent prompts
-- Created src/index.ts — Main entry point exporting all modules
-- Created src/package.json — TypeScript project config
-- Created src/tsconfig.json — TypeScript compiler config
-- Created src/tsconfig.test.json — Test-specific TypeScript config
-- Created src/.gitignore — Ignore node_modules, dist, package-lock.json
+- Created `src/agents/base_agent.ts` with `WorkflowAgent`, `AgentValidationResult`, and `BaseAgent`.
+- Created `src/orchestrator/pm_orchestrator.ts` with `PMOrchestrator`.
+- Created `src/orchestrator/workflow_runner.ts` with `runWorkflow()`.
+- Updated `src/index.ts` exports.
+- Added orchestrator and base agent tests.
+- Added `.ai_runs/` to `.gitignore` for generated workflow artifacts.
+- Ran a sample Phase 0 workflow into `.ai_runs/phase-0-demo`.
 
 ### EVIDENCE:
-- Files created: 12 new files
-- TypeScript build: PASS (tsc --noEmit)
-- Tests: 39/39 PASS (node --test)
-  - project_state.test.ts: 27 tests
-  - artifact_store.test.ts: 12 tests
+- Requirement accepted: PASS
+- ProjectState created and completed: PASS
+- Context Pack created: PASS
+- Task Plan created: PASS
+- Traceability Report created: PASS
+- Artifacts written under `.ai_runs/phase-0-demo`: PASS
+- Tests: 44/44 PASS
 
 ### CHANGED FILES:
-- src/types/agents.ts (new)
-- src/types/artifacts.ts (new)
-- src/types/workflow.ts (new)
-- src/state/project_state.ts (new)
-- src/state/project_state.test.ts (new)
-- src/tools/artifact_store.ts (new)
-- src/tools/artifact_store.test.ts (new)
-- src/prompts/index.ts (new)
-- src/index.ts (new)
-- src/package.json (new)
-- src/tsconfig.json (new)
-- src/tsconfig.test.json (new)
-- src/.gitignore (new)
+- `.gitignore`
+- `src/agents/base_agent.ts`
+- `src/agents/base_agent.test.ts`
+- `src/orchestrator/pm_orchestrator.ts`
+- `src/orchestrator/pm_orchestrator.test.ts`
+- `src/orchestrator/workflow_runner.ts`
+- `src/index.ts`
+- `AGENT_REPORT.md`
+- `NEXT_STEP.md`
+- `PHASE_LOG.md`
 
 ### VERIFICATION:
-- Command: npx tsc --noEmit → PASS
-- Command: npx tsc -p tsconfig.test.json → PASS
-- Command: node --test dist/state/project_state.test.js dist/tools/artifact_store.test.js → 39/39 PASS
+- Command: `cd src && npm run lint` -> PASS
+- Command: `cd src && npx tsc -p tsconfig.test.json` -> PASS
+- Command: `cd src && npm test` -> PASS, 44/44 tests
+- Command: `cd src && npm run build` -> PASS
+- Command: `node -e "const { runWorkflow } = require('./src/dist'); ..."` -> PASS, wrote requirement, context_pack, task_plan, traceability_report
 
 ### COMMIT:
 ```
-feat: add workflow contracts and artifact foundation
+feat: add project manager orchestrator scaffold
 ```
 
 ### STILL MISSING:
-- src/orchestrator/ — PM orchestrator workflow
-- src/agents/ — Agent base classes
-- BA Artifact agent prompt
-- Visual Modeling agent prompt
+- Phase 1 - Tool Integration
+- Phase 2 - Full Agent Implementation
+- Phase 3 - End-to-End Demo
+- Phase 4 - Polish & Extend
 
 ### NEXT SMALL STEP:
-Phase 0 — Project Manager Orchestrator Scaffold
+Phase 1 - Tool Integration

@@ -21,5 +21,7 @@ data/processed/*
 reports/*
 !reports/.gitkeep
 
+.ai_runs/
+
 .DS_Store
 Thumbs.db
