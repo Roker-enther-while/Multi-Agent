@@ -4,6 +4,9 @@
   "description": "Multi-Agent AI workflow contracts and artifact foundation",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "bin": {
+    "multi-agent-workflow": "dist/cli.js"
+  },
   "scripts": {
     "build": "tsc",
     "lint": "tsc --noEmit",

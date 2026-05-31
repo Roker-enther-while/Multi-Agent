@@ -1,29 +1,39 @@
 # NEXT STEP
 
-## FINAL PROJECT DONE
+## Current Actionable Next Step
 
-**Date:** 2026-05-31
+**Phase:** Phase 6 - Input Source Handler
 
-The roadmap is complete. No further phase is required.
+**Priority:** HIGH
 
-### Final Evidence
+**Action:** Support requirement input from text, Markdown file, JSON file, image metadata placeholder, and voice transcript placeholder.
 
-- End-to-end demo command: `node src/dist/demo/run_demo.js`
-- Demo status: `completed`
-- Artifacts written: context pack, task plan, test plan, implementation summary, verification report, code review report, traceability report, final report
-- Verification: all passed
-- Blockers: 0
-- Final validation: `finalValidation.passed: true`
-- Tests: 60/60 PASS
+---
 
-### Verification Commands
+### Required:
 
-- `cd src && npm run lint` -> PASS
-- `cd src && npx tsc -p tsconfig.test.json` -> PASS
-- `cd src && npm test` -> PASS
-- `cd src && npm run build` -> PASS
-- `node src/dist/demo/run_demo.js` -> PASS
+- Create input source types:
+  - `text`
+  - `file_markdown`
+  - `file_json`
+  - `image_reference`
+  - `voice_transcript`
+- Do not implement real OCR/ASR yet.
+- Normalize all inputs into `RequirementInput`.
+- Add tests.
+- Update docs.
 
-### Stop Condition
+---
 
-FINAL PROJECT DONE is satisfied. Continue only when a new roadmap or requirement is provided.
+### Verification:
+
+- `npm run lint`
+- `npx tsc -p tsconfig.test.json`
+- `npm test`
+- `npm run build`
+
+---
+
+### Commit:
+
+`feat: add multi-source requirement input handler`
