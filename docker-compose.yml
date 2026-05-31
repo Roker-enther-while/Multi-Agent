@@ -1,0 +1,110 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-vietmira}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-vietmira}
+      POSTGRES_DB: ${POSTGRES_DB:-vietmira}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-vietmira} -d ${POSTGRES_DB:-vietmira}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  qdrant:
+    image: qdrant/qdrant:v1.12.4
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  minio:
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+
+  backend:
+    build:
+      context: ./backend
+    env_file:
+      - .env.example
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-vietmira}:${POSTGRES_PASSWORD:-vietmira}@postgres:5432/${POSTGRES_DB:-vietmira}
+      QDRANT_URL: http://qdrant:6333
+      REDIS_URL: redis://redis:6379/0
+      IMAGE_EMBEDDING_DIM: 64
+      TEXT_EMBEDDING_DIM: 64
+      IMAGE_COLLECTION_NAME: image_frames_clip
+      TEXT_COLLECTION_NAME: text_chunks_dense
+      AUDIO_COLLECTION_NAME: audio_text_dense
+      ENABLE_QDRANT_INDEXING: "true"
+      MEDIA_ROOT: /data/media
+      STORAGE_ROOT: /data/raw
+      PROCESSED_ROOT: /data/processed
+      VIDEO_KEYFRAME_INTERVAL_SECONDS: 5
+      VIDEO_MAX_KEYFRAMES: 20
+      TEXT_CHUNK_SIZE: 800
+      TEXT_CHUNK_OVERLAP: 100
+      MAX_TEXT_INGEST_CHARS: 200000
+      HEALTH_FAIL_ON_DEPENDENCY_ERROR: "true"
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data/media:/data/media
+      - ./data/raw:/data/raw
+      - ./data/processed:/data/processed
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import json, urllib.request; data=json.load(urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health', timeout=3)); assert data['status']=='ok'"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_BASE_URL: http://localhost:8000/api/v1
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8000/api/v1
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  qdrant_data:
+  redis_data:
+  minio_data:

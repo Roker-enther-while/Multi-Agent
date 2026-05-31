@@ -1,0 +1,15 @@
+[
+  {
+    "query_id": "q_001",
+    "query": "Tim nguoi mac ao do dung canh xe may",
+    "task_type": "known_item",
+    "relevant": [
+      {
+        "asset_id": "video_00012",
+        "segment_id": "video_00012_frame_0",
+        "timestamp_start": 132.4,
+        "timestamp_end": 139.8
+      }
+    ]
+  }
+]

@@ -1,0 +1,19 @@
+embedding:
+  image_text:
+    provider: mock
+    model_name: mock-clip
+    dimension: 64
+  text:
+    provider: mock
+    model_name: mock-text-embedding
+    dimension: 64
+ocr:
+  provider: mock
+asr:
+  provider: mock
+  video_transcript_provider: mock
+  model_name: mock-asr
+captioning:
+  provider: mock
+object_detection:
+  provider: mock

@@ -1,0 +1,18 @@
+fusion:
+  method: rrf
+  rrf_k: 60
+  weighted_enabled: true
+image_search:
+  collection_name: image_frames_clip
+  baseline: caption_ocr_text_match
+text_search:
+  collection_name: text_chunks_dense
+audio_search:
+  collection_name: audio_text_dense
+weights:
+  visual: 0.30
+  text: 0.25
+  ocr: 0.15
+  transcript: 0.15
+  object: 0.10
+  metadata: 0.05

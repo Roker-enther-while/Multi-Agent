@@ -1,0 +1,4 @@
+auto_mode:
+  default_top_k: 10
+  speed_mode: balanced
+  return_format: challenge_json
