@@ -622,3 +622,31 @@
 - `cd src && npm test` -> PASS, 77/77
 - `node src/dist/evaluation/run_evaluation.js` -> PASS, 5/5
 - Server start + API test -> PASS
+
+---
+
+### Real User Release Mode
+
+**Date:** 2026-05-31
+
+**Status:** COMPLETED
+
+**Goal:** Make the app usable for a real user after clone.
+
+**Phases Completed:**
+1. UI Patch Mode — mode selector, workspace input, patch result display
+2. Workspace Import — scan workspace, file tree, recent workspace
+3. Diff Viewer — unified diff, scope guard, link to review
+4. Multi-Source Input — file attachment, upload before run
+5. Model Provider UX — provider help, key toggle, test connection
+6. Export Package — download run as JSON
+7. Safety Hardening — upload limits, file type whitelist, path guards
+8. Demo and Thesis Pack — DEMO_SCRIPT.md, docs/thesis_outline.md
+9. Fresh Clone Verification — FRESH_CLONE_CHECK.md
+10. Final Audit — RELEASE_AUDIT.md, AGENT_REPORT.md updated
+
+**Verification:**
+- `cd src && npm run lint` -> PASS
+- `cd src && npm run build` -> PASS
+- `cd src && npm test` -> PASS, 77/77
+- `node src/dist/evaluation/run_evaluation.js` -> PASS, 5/5

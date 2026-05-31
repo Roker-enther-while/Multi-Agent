@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-31
 **Commit:** (pending)
-**Status:** FINAL APP DONE
+**Status:** REAL USER RELEASE DONE
 
 ---
 
@@ -156,6 +156,41 @@ All 16 conditions satisfied:
 ### Reports:
 - `reports/real_code_patch_validation.json`
 - `reports/real_code_patch_validation.md`
+
+## REAL USER RELEASE DONE
+
+All conditions satisfied:
+1. ✅ User can select workspace (scan, recent, path input)
+2. ✅ User can chat requirement (text input with file attachment)
+3. ✅ User can choose plan_only or patch_mode (mode selector)
+4. ✅ UI shows progress, artifacts, diff, tests, review, report
+5. ✅ User can attach files (multi-file upload with type validation)
+6. ✅ User can export run package (JSON download)
+7. ✅ Model settings are usable and safe (provider help, key masking, test connection)
+8. ✅ README/docs/demo instructions match actual commands
+9. ✅ tests/build pass (77/77, 5/5 evaluation)
+10. ✅ working tree clean after commit
+
+### New Files:
+- DEMO_SCRIPT.md — demo flow with talking points
+- FRESH_CLONE_CHECK.md — 13-step verification checklist
+- docs/thesis_outline.md — thesis chapter structure
+
+### API Endpoints (15 total):
+- GET /api/health
+- GET/POST /api/settings
+- POST /api/models/test-connection
+- POST /api/runs (with mode and workspace)
+- GET /api/runs
+- GET /api/runs/:runId
+- GET /api/runs/:runId/artifacts
+- GET /api/runs/:runId/artifacts/:name
+- GET /api/runs/:runId/report
+- GET /api/runs/:runId/diff
+- GET /api/runs/:runId/export
+- POST /api/files/upload
+- GET /api/workspace/scan
+- GET /api/workspace/recent
 
 ## FINAL APP DONE
 

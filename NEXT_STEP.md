@@ -1,23 +1,20 @@
 # NEXT STEP
 
-## Phase A — Backend API
+## REAL USER RELEASE DONE
 
-**Goal:** Create API around existing workflow engine.
+**Date:** 2026-05-31
 
-**Endpoints:**
-- GET /api/health
-- GET /api/settings
-- POST /api/settings
-- POST /api/runs
-- GET /api/runs/:runId
-- GET /api/runs/:runId/artifacts
-- GET /api/runs/:runId/artifacts/:artifactName
-- GET /api/runs/:runId/report
-- POST /api/files/upload
+All release conditions satisfied. The app is ready for real users.
 
-**Files to create:**
-- `src/server/server.ts` — HTTP server with routing
-- `src/server/routes.ts` — API route handlers
-- `src/server/run_store.ts` — Run state management
+### What a user can do:
+1. Clone repo, install, build, start server
+2. Open UI at http://localhost:3456
+3. Configure model provider (mock, OpenAI, Anthropic, Gemini, Ollama, LM Studio)
+4. Enter a software requirement and run workflow
+5. Choose plan_only or patch_mode
+6. View progress, artifacts, diff, tests, review, report
+7. Attach input files (text, markdown, JSON, images)
+8. Export run package as JSON
+9. View HTML report
 
-**Verification:** Server starts, API responds, workflow runs from API.
+### No further action required.

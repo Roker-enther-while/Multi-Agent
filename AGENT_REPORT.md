@@ -4,50 +4,31 @@
 
 **Date:** 2026-05-31
 
-**Phase:** App Mode Implementation
+**Phase:** Real User Release Mode — Final Audit
 
-**Task:** Turn the project into a real local web tool.
+**Status:** REAL USER RELEASE DONE
 
 ---
 
 ### PHASES COMPLETED:
 
-**Phase A — Backend API**
-- GET /api/health, GET/POST /api/settings, POST /api/models/test-connection
-- POST /api/runs, GET /api/runs, GET /api/runs/:runId
-- GET /api/runs/:runId/artifacts, GET /api/runs/:runId/artifacts/:name
-- GET /api/runs/:runId/report, POST /api/files/upload
-- Plain Node.js HTTP server, no new dependencies
+1. **UI Patch Mode** — Mode selector, workspace input, patch result display
+2. **Workspace Import** — Scan workspace, show file tree, recent workspace
+3. **Diff Viewer** — Unified diff display, scope guard, link to review
+4. **Multi-Source Input** — File attachment, upload before run
+5. **Model Provider UX** — Provider help, key visibility toggle, test connection
+6. **Export Package** — Download run as JSON with all artifacts
+7. **Safety Hardening** — Upload size limit, file type whitelist, path guards
+8. **Demo and Thesis Pack** — DEMO_SCRIPT.md, docs/thesis_outline.md
+9. **Fresh Clone Verification** — FRESH_CLONE_CHECK.md with 13 steps
+10. **Final Audit** — This report
 
-**Phase B — Model Provider Layer**
-- Mock provider (default, always available)
-- OpenAI-compatible, Anthropic, Gemini, Ollama, LM Studio providers
-- Config via env vars, missing keys don't break mock mode
-
-**Phase C — Chat to Workflow Bridge**
-- POST /api/runs creates workflow run (already in Phase A)
-- Run status: queued → running → completed/failed/blocked
-- Polling for status updates
-
-**Phase D — Frontend UI**
-- Single-page chat interface at http://localhost:3456
-- Chat panel, run list sidebar, artifact viewer, report link
-- Settings modal for model configuration
-- Auto-polling for workflow completion
-
-**Phase E — Real App Demo**
-- DEMO_APP_RESULT.md created with install/start/demo instructions
-
-**Phase F — Final App Audit**
-- docs/app_mode.md created
-- README updated with app mode section
-
-### COMMANDS RUN:
+### VERIFICATION:
 - `cd src && npm run lint` -> PASS
 - `cd src && npm run build` -> PASS
 - `cd src && npm test` -> PASS, 77/77
 - `node src/dist/evaluation/run_evaluation.js` -> PASS, 5/5
-- Server start + API test -> PASS
+- Server + API smoke -> PASS
 
-### FINAL APP DONE:
-PASS — Backend API works, frontend UI works, mock provider works, user can run workflow from UI, artifacts visible, report.html accessible, README has commands, DEMO_APP_RESULT.md exists, tests/build pass.
+### REAL USER RELEASE DONE:
+All conditions satisfied. User can clone, install, start server, open UI, chat requirement, choose plan/patch mode, view artifacts/diff/test/review/report, attach files, export results.
