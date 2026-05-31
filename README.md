@@ -2,6 +2,36 @@
 
 Vietnamese Multimedia Intelligent Retrieval Assistant.
 
+## Multi-Agent Workflow Productization
+
+This repository also contains a thesis-oriented multi-agent workflow core in `src/`. It is not a generic chatbot and not a clone of coding assistants. Its focus is senior-like software workflow management: requirement intake, context packaging, BA artifacts, visual modeling, task planning, test planning, verification, code review, traceability, and final reporting.
+
+Key commands:
+
+```bash
+cd src
+npm run lint
+npx tsc -p tsconfig.test.json
+npm test
+npm run build
+cd ..
+node src/dist/cli.js --help
+node src/dist/demo/run_demo.js
+node src/dist/evaluation/run_evaluation.js
+```
+
+Generated workflow artifacts are written under `.ai_runs/`. The demo produces `report.html` for human review and a manifest with `finalValidation.passed`.
+
+Thesis documentation:
+
+- `docs/problem_statement.md`
+- `docs/system_design.md`
+- `docs/agent_workflow.md`
+- `docs/evaluation_method.md`
+- `docs/demo_script.md`
+
+Current limitations: core agents are deterministic; real LLM calls, OCR, ASR, and external integrations are future work.
+
 VietMIRA is a local-first multimedia retrieval system for image, video, audio, and text collections. It supports two competition workflows:
 
 - Interactive mode: users search and inspect evidence through the Next.js UI.
