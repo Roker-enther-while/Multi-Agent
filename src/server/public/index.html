@@ -82,7 +82,16 @@ header button:hover{background:#475569}
       </div>
     </div>
     <div class="input-area">
-      <textarea id="requirementInput" rows="2" placeholder="Enter a software requirement..."></textarea>
+      <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="runMode" style="background:#1e293b;color:#e2e8f0;border:1px solid #334155;padding:6px 10px;border-radius:6px;font-size:13px">
+            <option value="plan_only">Plan Only</option>
+            <option value="patch_mode">Patch Mode</option>
+          </select>
+          <input id="workspaceInput" placeholder="Workspace path (e.g. examples/patch_targets/ts_mini_app)" style="flex:1;background:#1e293b;color:#e2e8f0;border:1px solid #334155;padding:6px 10px;border-radius:6px;font-size:13px;display:none">
+        </div>
+        <textarea id="requirementInput" rows="2" placeholder="Enter a software requirement..."></textarea>
+      </div>
       <button id="submitBtn" onclick="submitRequirement()">Run</button>
     </div>
   </div>
@@ -159,10 +168,24 @@ function showDetail(run) {
   panel.classList.remove('hidden');
 
   let html = `<h4>Requirement</h4><pre>${esc(run.requirement)}</pre>`;
+  html += `<h4>Mode</h4><p>${run.mode || 'plan_only'}</p>`;
   html += `<h4>Status</h4><p><span class="status-badge ${run.status}">${run.status}</span></p>`;
 
   if (run.runDir) {
     html += `<h4>Report</h4><p><a href="/api/runs/${run.runId}/report" target="_blank">Open report.html</a></p>`;
+  }
+
+  // Patch results
+  if (run.patchResult) {
+    html += `<h4>Patch Result</h4>`;
+    html += `<p>Applied: ${run.patchResult.applied ? '✅' : '❌'}</p>`;
+    html += `<p>Tests Pass: ${run.patchResult.testsPass ? '✅' : '❌'}</p>`;
+    if (run.patchResult.filesChanged?.length) {
+      html += `<p>Files Changed: ${run.patchResult.filesChanged.join(', ')}</p>`;
+    }
+    if (run.patchResult.diff) {
+      html += `<h4>Diff</h4><pre>${esc(run.patchResult.diff)}</pre>`;
+    }
   }
 
   html += `<h4>Artifacts (${run.artifactCount})</h4>`;
@@ -194,10 +217,15 @@ function closeDetail() {
 async function submitRequirement() {
   const input = document.getElementById('requirementInput');
   const btn = document.getElementById('submitBtn');
+  const modeSelect = document.getElementById('runMode');
+  const workspaceInput = document.getElementById('workspaceInput');
   const requirement = input.value.trim();
   if (!requirement) return;
 
-  addMessage('user', requirement);
+  const mode = modeSelect.value;
+  const workspace = workspaceInput.value.trim();
+
+  addMessage('user', `${mode === 'patch_mode' ? '[Patch Mode] ' : ''}${requirement}`);
   input.value = '';
   btn.disabled = true;
   btn.textContent = 'Running...';
@@ -206,7 +234,7 @@ async function submitRequirement() {
     const result = await fetchJSON('/api/runs', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ requirement }),
+      body: JSON.stringify({ requirement, mode, workspace: workspace || undefined }),
     });
 
     addMessage('system', `<h4>Workflow Started</h4><p>Run ID: ${result.runId}</p><p>Status: <span class="status-badge running">running</span></p>`);
@@ -293,6 +321,11 @@ async function testConnection() {
   const result = await fetchJSON('/api/models/test-connection', { method: 'POST' });
   alert(result.ok ? `✅ ${result.message}` : `❌ ${result.message}`);
 }
+
+// Mode selector
+document.getElementById('runMode').addEventListener('change', (e) => {
+  document.getElementById('workspaceInput').style.display = e.target.value === 'patch_mode' ? 'block' : 'none';
+});
 
 // Keyboard shortcut
 document.getElementById('requirementInput').addEventListener('keydown', (e) => {

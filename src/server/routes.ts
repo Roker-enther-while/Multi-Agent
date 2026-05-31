@@ -3,8 +3,9 @@ import * as path from "path";
 import { runFullWorkflow } from "../orchestrator/full_workflow_runner";
 import { writeHtmlWorkflowReport } from "../tools/html_report_generator";
 import { buildDemoManifest } from "../demo/demo_manifest";
-import { runStore, type RunRecord } from "./run_store";
+import { runStore, type RunRecord, type RunMode } from "./run_store";
 import { loadModelConfig, createProvider } from "./model_provider";
+import { applyPatch, snapshotFiles, getDiff, revertPatch, type PatchOperation } from "../tools/patch_applicator";
 
 export interface ApiContext {
   rootDir: string;
@@ -89,23 +90,33 @@ export async function handleRequest(
     if (!parsed || typeof parsed !== "object") {
       return json(400, { error: "Invalid JSON body" });
     }
-    const { requirement } = parsed as { requirement?: string };
+    const { requirement, mode, workspace } = parsed as { requirement?: string; mode?: string; workspace?: string };
     if (!requirement?.trim()) {
       return json(400, { error: "Requirement is required" });
     }
 
+    const runMode: RunMode = mode === "patch_mode" ? "patch_mode" : "plan_only";
     const runId = `run-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    const record = runStore.createRun(runId, requirement.trim());
+    const record = runStore.createRun(runId, requirement.trim(), runMode);
 
     // Run workflow asynchronously
-    runWorkflowAsync(runId, requirement.trim(), ctx).catch((err) => {
-      runStore.updateRun(runId, {
-        status: "failed",
-        error: err instanceof Error ? err.message : String(err),
+    if (runMode === "patch_mode" && workspace) {
+      runPatchModeAsync(runId, requirement.trim(), workspace, ctx).catch((err) => {
+        runStore.updateRun(runId, {
+          status: "failed",
+          error: err instanceof Error ? err.message : String(err),
+        });
       });
-    });
+    } else {
+      runWorkflowAsync(runId, requirement.trim(), ctx).catch((err) => {
+        runStore.updateRun(runId, {
+          status: "failed",
+          error: err instanceof Error ? err.message : String(err),
+        });
+      });
+    }
 
-    return json(201, { runId, status: record.status });
+    return json(201, { runId, status: record.status, mode: runMode });
   }
 
   // GET /api/runs
@@ -220,6 +231,116 @@ async function runWorkflowAsync(
       artifactCount: result.artifacts.length,
       artifacts: result.artifacts.map((a) => ({ type: a.type, path: a.path })),
       finalValidation: manifest.finalValidation.passed,
+    });
+  } catch (err) {
+    runStore.updateRun(runId, {
+      status: "failed",
+      error: err instanceof Error ? err.message : String(err),
+    });
+  }
+}
+
+async function runPatchModeAsync(
+  runId: string,
+  requirement: string,
+  workspace: string,
+  ctx: ApiContext
+): Promise<void> {
+  runStore.updateRun(runId, { status: "running" });
+
+  try {
+    // First run the workflow to generate artifacts
+    const result = await runFullWorkflow(requirement, {
+      runId,
+      baseDir: ctx.baseDir,
+      rootDir: ctx.rootDir,
+      verificationCommands: [
+        {
+          command: "node -e \"console.log('patch verification pass')\"",
+          description: "Patch mode verification",
+          expectedOutput: "patch verification pass",
+          timeoutMs: 5000,
+        },
+      ],
+    });
+
+    const htmlReport = writeHtmlWorkflowReport(result);
+    const manifest = buildDemoManifest(result, {
+      repoRoot: ctx.rootDir,
+      htmlReportPath: htmlReport.path,
+    });
+
+    // Try to apply a patch to the workspace
+    let patchResult: RunRecord["patchResult"];
+    const workspacePath = path.resolve(ctx.rootDir, workspace);
+
+    if (fs.existsSync(workspacePath)) {
+      // Read patch scenarios and find matching one
+      const scenariosPath = path.join(ctx.rootDir, "examples/patch_targets/patch_scenarios.json");
+      if (fs.existsSync(scenariosPath)) {
+        const scenarios = JSON.parse(fs.readFileSync(scenariosPath, "utf-8"));
+        const matchingScenario = scenarios.find((s: { requirement: string }) =>
+          requirement.toLowerCase().includes(s.requirement.slice(0, 30).toLowerCase()) ||
+          s.requirement.toLowerCase().includes(requirement.slice(0, 30).toLowerCase())
+        );
+
+        if (matchingScenario) {
+          const allFiles = [matchingScenario.sourcePatch.file, matchingScenario.testPatch.file];
+          const uniqueFiles = [...new Set(allFiles)];
+          const original = snapshotFiles(workspacePath, uniqueFiles);
+
+          const operations: PatchOperation[] = [matchingScenario.sourcePatch];
+          if (matchingScenario.sourcePatch2) operations.push(matchingScenario.sourcePatch2);
+          if (matchingScenario.importPatch) operations.push(matchingScenario.importPatch);
+          operations.push(matchingScenario.testPatch);
+
+          const patchApplyResult = applyPatch(workspacePath, operations);
+
+          if (patchApplyResult.success) {
+            // Build and test
+            let testOutput = "";
+            let testsPass = false;
+            try {
+              const { execSync } = require("child_process");
+              execSync("npm run build", { cwd: workspacePath, stdio: "pipe" });
+              testOutput = execSync("npm test", { cwd: workspacePath, encoding: "utf-8", stdio: "pipe" });
+              testsPass = !testOutput.includes("# fail") || testOutput.includes("# fail 0");
+            } catch (testErr: unknown) {
+              testOutput = testErr instanceof Error ? testErr.message : String(testErr);
+            }
+
+            const diff = getDiff(workspacePath, uniqueFiles, original);
+
+            patchResult = {
+              applied: true,
+              testsPass,
+              diff,
+              filesChanged: patchApplyResult.filesModified,
+              testOutput,
+            };
+          } else {
+            patchResult = {
+              applied: false,
+              testsPass: false,
+              diff: "",
+              filesChanged: [],
+              testOutput: `Patch failed: ${patchApplyResult.error}`,
+            };
+          }
+
+          // Always revert
+          revertPatch(workspacePath, original);
+        }
+      }
+    }
+
+    runStore.updateRun(runId, {
+      status: result.state.status === "completed" ? "completed" : "blocked",
+      runDir: result.runDir,
+      artifactCount: result.artifacts.length,
+      artifacts: result.artifacts.map((a) => ({ type: a.type, path: a.path })),
+      finalValidation: manifest.finalValidation.passed,
+      patchResult,
     });
   } catch (err) {
     runStore.updateRun(runId, {

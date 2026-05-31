@@ -2,10 +2,12 @@ import * as fs from "fs";
 import * as path from "path";
 
 export type RunStatus = "queued" | "running" | "completed" | "failed" | "blocked";
+export type RunMode = "plan_only" | "patch_mode";
 
 export interface RunRecord {
   runId: string;
   requirement: string;
+  mode: RunMode;
   status: RunStatus;
   createdAt: string;
   updatedAt: string;
@@ -14,16 +16,24 @@ export interface RunRecord {
   artifacts: Array<{ type: string; path: string }>;
   error?: string;
   finalValidation?: boolean;
+  patchResult?: {
+    applied: boolean;
+    testsPass: boolean;
+    diff: string;
+    filesChanged: string[];
+    testOutput: string;
+  };
 }
 
 export class RunStore {
   private runs: Map<string, RunRecord> = new Map();
 
-  public createRun(runId: string, requirement: string): RunRecord {
+  public createRun(runId: string, requirement: string, mode: RunMode = "plan_only"): RunRecord {
     const now = new Date().toISOString();
     const record: RunRecord = {
       runId,
       requirement,
+      mode,
       status: "queued",
       createdAt: now,
       updatedAt: now,
