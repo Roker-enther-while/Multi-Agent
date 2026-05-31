@@ -1,0 +1,11 @@
+{
+  "id": "demo_chat_workflow",
+  "name": "Run chat workflow from UI",
+  "steps": [
+    {"action": "goto", "url": "/"},
+    {"action": "waitForSelector", "selector": "#requirementInput"},
+    {"action": "fill", "selector": "#requirementInput", "value": "Add GET /health/details returning app_name, version, and environment."},
+    {"action": "click", "selector": "#submitBtn"},
+    {"action": "waitForText", "text": "completed"}
+  ]
+}
