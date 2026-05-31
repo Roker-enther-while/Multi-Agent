@@ -1,4 +1,5 @@
 import * as http from "http";
+import * as fs from "fs";
 import * as path from "path";
 import { handleRequest, type ApiContext } from "./routes";
 
@@ -23,6 +24,33 @@ function readBody(req: http.IncomingMessage): Promise<string | undefined> {
   });
 }
 
+const PUBLIC_DIR = path.resolve(__dirname, "../../server/public");
+
+function serveStatic(req: http.IncomingMessage, res: http.ServerResponse): boolean {
+  const url = req.url || "/";
+  let filePath = url === "/" ? "/index.html" : url;
+  filePath = path.resolve(PUBLIC_DIR, "." + filePath);
+  const normalizedPublic = path.resolve(PUBLIC_DIR);
+  const normalizedFile = path.resolve(filePath);
+
+  if (!fs.existsSync(normalizedFile) || !normalizedFile.startsWith(normalizedPublic)) return false;
+
+  const ext = path.extname(filePath);
+  const contentTypes: Record<string, string> = {
+    ".html": "text/html; charset=utf-8",
+    ".css": "text/css",
+    ".js": "application/javascript",
+    ".json": "application/json",
+    ".png": "image/png",
+    ".svg": "image/svg+xml",
+  };
+
+  const content = fs.readFileSync(filePath);
+  res.writeHead(200, { "Content-Type": contentTypes[ext] || "application/octet-stream" });
+  res.end(content);
+  return true;
+}
+
 const server = http.createServer(async (req, res) => {
   const method = req.method || "GET";
   const url = req.url || "/";
@@ -36,6 +64,11 @@ const server = http.createServer(async (req, res) => {
     res.writeHead(204);
     res.end();
     return;
+  }
+
+  // Serve static files for non-API routes
+  if (!url.startsWith("/api/")) {
+    if (serveStatic(req, res)) return;
   }
 
   try {

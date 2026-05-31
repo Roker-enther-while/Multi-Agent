@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Multi-Agent Workflow</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:#0f172a;color:#e2e8f0;height:100vh;display:flex;flex-direction:column}
+header{background:#1e293b;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #334155}
+header h1{font-size:18px;color:#38bdf8}
+header button{background:#334155;color:#e2e8f0;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:13px}
+header button:hover{background:#475569}
+.main{display:flex;flex:1;overflow:hidden}
+.sidebar{width:280px;background:#1e293b;border-right:1px solid #334155;display:flex;flex-direction:column}
+.sidebar h3{padding:12px 16px;font-size:14px;color:#94a3b8;border-bottom:1px solid #334155}
+.run-list{flex:1;overflow-y:auto;padding:8px}
+.run-item{padding:10px 12px;border-radius:6px;cursor:pointer;margin-bottom:4px;font-size:13px}
+.run-item:hover{background:#334155}
+.run-item.active{background:#1d4ed8;color:white}
+.run-item .run-id{font-weight:600;font-size:12px;opacity:0.7}
+.run-item .run-status{font-size:11px;margin-top:2px}
+.chat-area{flex:1;display:flex;flex-direction:column}
+.messages{flex:1;overflow-y:auto;padding:20px}
+.msg{margin-bottom:16px;max-width:80%}
+.msg.user{margin-left:auto;background:#1d4ed8;color:white;padding:12px 16px;border-radius:12px 12px 4px 12px}
+.msg.system{background:#1e293b;padding:12px 16px;border-radius:12px 12px 12px 4px;border:1px solid #334155}
+.msg.system h4{color:#38bdf8;margin-bottom:6px;font-size:13px}
+.msg.system pre{background:#0f172a;padding:8px;border-radius:4px;font-size:12px;overflow-x:auto;white-space:pre-wrap}
+.msg.system .artifact-link{color:#38bdf8;cursor:pointer;text-decoration:underline;font-size:12px}
+.input-area{padding:16px;border-top:1px solid #334155;display:flex;gap:8px}
+.input-area textarea{flex:1;background:#1e293b;color:#e2e8f0;border:1px solid #334155;padding:10px 14px;border-radius:8px;font-size:14px;resize:none;font-family:inherit}
+.input-area textarea:focus{outline:none;border-color:#38bdf8}
+.input-area button{background:#2563eb;color:white;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600}
+.input-area button:hover{background:#1d4ed8}
+.input-area button:disabled{background:#334155;cursor:not-allowed}
+.detail-panel{width:400px;background:#1e293b;border-left:1px solid #334155;display:flex;flex-direction:column;overflow:hidden}
+.detail-panel.hidden{display:none}
+.detail-panel h3{padding:12px 16px;font-size:14px;color:#94a3b8;border-bottom:1px solid #334155;display:flex;justify-content:space-between;align-items:center}
+.detail-panel h3 button{background:none;border:none;color:#94a3b8;cursor:pointer;font-size:18px}
+.detail-content{flex:1;overflow-y:auto;padding:16px}
+.detail-content h4{color:#38bdf8;margin:12px 0 6px;font-size:13px}
+.detail-content pre{background:#0f172a;padding:8px;border-radius:4px;font-size:12px;overflow-x:auto;white-space:pre-wrap;margin-bottom:8px}
+.detail-content a{color:#38bdf8}
+.progress-bar{height:4px;background:#334155;border-radius:2px;margin:8px 0;overflow:hidden}
+.progress-bar .fill{height:100%;background:#2563eb;border-radius:2px;transition:width 0.3s}
+.status-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.status-badge.completed{background:#065f46;color:#6ee7b7}
+.status-badge.running{background:#1e40af;color:#93c5fd}
+.status-badge.queued{background:#78350f;color:#fcd34d}
+.status-badge.failed{background:#7f1d1d;color:#fca5a5}
+.settings-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:100}
+.settings-overlay.open{display:flex}
+.settings-modal{background:#1e293b;border-radius:12px;padding:24px;width:400px;max-width:90vw}
+.settings-modal h2{font-size:16px;margin-bottom:16px;color:#e2e8f0}
+.settings-modal label{display:block;font-size:13px;color:#94a3b8;margin-bottom:4px;margin-top:12px}
+.settings-modal input,.settings-modal select{width:100%;background:#0f172a;color:#e2e8f0;border:1px solid #334155;padding:8px 12px;border-radius:6px;font-size:13px}
+.settings-modal .btn-row{display:flex;gap:8px;margin-top:20px;justify-content:flex-end}
+.settings-modal button{padding:8px 16px;border-radius:6px;border:none;cursor:pointer;font-size:13px}
+.settings-modal .btn-primary{background:#2563eb;color:white}
+.settings-modal .btn-secondary{background:#334155;color:#e2e8f0}
+</style>
+</head>
+<body>
+<header>
+  <h1>Multi-Agent Workflow</h1>
+  <div>
+    <button onclick="testConnection()">Test Connection</button>
+    <button onclick="openSettings()">Settings</button>
+  </div>
+</header>
+<div class="main">
+  <div class="sidebar">
+    <h3>Runs</h3>
+    <div class="run-list" id="runList"></div>
+  </div>
+  <div class="chat-area">
+    <div class="messages" id="messages">
+      <div class="msg system">
+        <h4>Welcome</h4>
+        <p>Enter a software requirement below to start a workflow run. The system will generate context, plans, tests, implementation guidance, review, and traceability artifacts.</p>
+      </div>
+    </div>
+    <div class="input-area">
+      <textarea id="requirementInput" rows="2" placeholder="Enter a software requirement..."></textarea>
+      <button id="submitBtn" onclick="submitRequirement()">Run</button>
+    </div>
+  </div>
+  <div class="detail-panel hidden" id="detailPanel">
+    <h3>Run Details <button onclick="closeDetail()">×</button></h3>
+    <div class="detail-content" id="detailContent"></div>
+  </div>
+</div>
+
+<div class="settings-overlay" id="settingsOverlay">
+  <div class="settings-modal">
+    <h2>Model Settings</h2>
+    <label>Provider</label>
+    <select id="setProvider">
+      <option value="mock">Mock (default)</option>
+      <option value="openai_compatible">OpenAI Compatible</option>
+      <option value="anthropic">Anthropic</option>
+      <option value="gemini">Gemini</option>
+      <option value="ollama">Ollama</option>
+      <option value="lmstudio">LM Studio</option>
+    </select>
+    <label>Base URL</label>
+    <input id="setBaseUrl" placeholder="http://localhost:11434">
+    <label>API Key</label>
+    <input id="setApiKey" type="password" placeholder="sk-...">
+    <label>Model Name</label>
+    <input id="setModelName" placeholder="mock-model">
+    <label>Temperature</label>
+    <input id="setTemperature" type="number" step="0.1" min="0" max="2" value="0.2">
+    <label>Max Tokens</label>
+    <input id="setMaxTokens" type="number" value="4096">
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="closeSettings()">Cancel</button>
+      <button class="btn-primary" onclick="saveSettings()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '';
+let currentRuns = [];
+let selectedRunId = null;
+
+async function fetchJSON(url, opts) {
+  const res = await fetch(API + url, opts);
+  return res.json();
+}
+
+async function loadRuns() {
+  currentRuns = await fetchJSON('/api/runs');
+  renderRunList();
+}
+
+function renderRunList() {
+  const el = document.getElementById('runList');
+  el.innerHTML = currentRuns.map(r => `
+    <div class="run-item ${r.runId === selectedRunId ? 'active' : ''}" onclick="selectRun('${r.runId}')">
+      <div class="run-id">${r.runId}</div>
+      <div class="run-status"><span class="status-badge ${r.status}">${r.status}</span> ${r.artifactCount} artifacts</div>
+    </div>
+  `).join('');
+}
+
+async function selectRun(runId) {
+  selectedRunId = runId;
+  renderRunList();
+  const run = await fetchJSON(`/api/runs/${runId}`);
+  showDetail(run);
+}
+
+function showDetail(run) {
+  const panel = document.getElementById('detailPanel');
+  const content = document.getElementById('detailContent');
+  panel.classList.remove('hidden');
+
+  let html = `<h4>Requirement</h4><pre>${esc(run.requirement)}</pre>`;
+  html += `<h4>Status</h4><p><span class="status-badge ${run.status}">${run.status}</span></p>`;
+
+  if (run.runDir) {
+    html += `<h4>Report</h4><p><a href="/api/runs/${run.runId}/report" target="_blank">Open report.html</a></p>`;
+  }
+
+  html += `<h4>Artifacts (${run.artifactCount})</h4>`;
+  for (const a of run.artifacts) {
+    html += `<p class="artifact-link" onclick="viewArtifact('${run.runId}','${a.type}')">${a.type}</p>`;
+  }
+
+  if (run.finalValidation !== undefined) {
+    html += `<h4>Final Validation</h4><p>${run.finalValidation ? '✅ Passed' : '❌ Failed'}</p>`;
+  }
+
+  content.innerHTML = html;
+}
+
+async function viewArtifact(runId, type) {
+  const data = await fetchJSON(`/api/runs/${runId}/artifacts/${type}`);
+  const panel = document.getElementById('detailPanel');
+  const content = document.getElementById('detailContent');
+  panel.classList.remove('hidden');
+  content.innerHTML = `<h4>${type}</h4><pre>${esc(data.content)}</pre><p><a href="#" onclick="selectRun('${runId}');return false">← Back to run</a></p>`;
+}
+
+function closeDetail() {
+  document.getElementById('detailPanel').classList.add('hidden');
+  selectedRunId = null;
+  renderRunList();
+}
+
+async function submitRequirement() {
+  const input = document.getElementById('requirementInput');
+  const btn = document.getElementById('submitBtn');
+  const requirement = input.value.trim();
+  if (!requirement) return;
+
+  addMessage('user', requirement);
+  input.value = '';
+  btn.disabled = true;
+  btn.textContent = 'Running...';
+
+  try {
+    const result = await fetchJSON('/api/runs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ requirement }),
+    });
+
+    addMessage('system', `<h4>Workflow Started</h4><p>Run ID: ${result.runId}</p><p>Status: <span class="status-badge running">running</span></p>`);
+
+    // Poll for completion
+    const runId = result.runId;
+    let attempts = 0;
+    const poll = setInterval(async () => {
+      attempts++;
+      const run = await fetchJSON(`/api/runs/${runId}`);
+      if (run.status === 'completed' || run.status === 'failed' || run.status === 'blocked' || attempts > 60) {
+        clearInterval(poll);
+        btn.disabled = false;
+        btn.textContent = 'Run';
+        await loadRuns();
+
+        if (run.status === 'completed') {
+          addMessage('system', `<h4>Workflow Completed</h4>
+            <p>Run: ${runId}</p>
+            <p>Artifacts: ${run.artifactCount}</p>
+            <p>Validation: ${run.finalValidation ? '✅ Passed' : '❌ Failed'}</p>
+            <p><a href="/api/runs/${runId}/report" target="_blank">Open Report</a></p>
+            <p class="artifact-link" onclick="selectRun('${runId}')">View Details →</p>
+          `);
+        } else {
+          addMessage('system', `<h4>Workflow ${run.status}</h4><p>${run.error || 'Check run details for more info.'}</p>`);
+        }
+      }
+    }, 1000);
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = 'Run';
+    addMessage('system', `<h4>Error</h4><pre>${esc(err.message)}</pre>`);
+  }
+}
+
+function addMessage(type, html) {
+  const el = document.getElementById('messages');
+  const msg = document.createElement('div');
+  msg.className = `msg ${type}`;
+  msg.innerHTML = html;
+  el.appendChild(msg);
+  el.scrollTop = el.scrollHeight;
+}
+
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// Settings
+async function loadSettings() {
+  const s = await fetchJSON('/api/settings');
+  document.getElementById('setProvider').value = s.provider;
+  document.getElementById('setBaseUrl').value = s.baseUrl;
+  document.getElementById('setModelName').value = s.modelName;
+  document.getElementById('setTemperature').value = s.temperature;
+  document.getElementById('setMaxTokens').value = s.maxTokens;
+}
+
+function openSettings() {
+  loadSettings();
+  document.getElementById('settingsOverlay').classList.add('open');
+}
+
+function closeSettings() {
+  document.getElementById('settingsOverlay').classList.remove('open');
+}
+
+async function saveSettings() {
+  await fetchJSON('/api/settings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      provider: document.getElementById('setProvider').value,
+      baseUrl: document.getElementById('setBaseUrl').value,
+      apiKey: document.getElementById('setApiKey').value,
+      modelName: document.getElementById('setModelName').value,
+      temperature: parseFloat(document.getElementById('setTemperature').value),
+      maxTokens: parseInt(document.getElementById('setMaxTokens').value),
+    }),
+  });
+  closeSettings();
+}
+
+async function testConnection() {
+  const result = await fetchJSON('/api/models/test-connection', { method: 'POST' });
+  alert(result.ok ? `✅ ${result.message}` : `❌ ${result.message}`);
+}
+
+// Keyboard shortcut
+document.getElementById('requirementInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitRequirement(); }
+});
+
+// Init
+loadRuns();
+</script>
+</body>
+</html>
