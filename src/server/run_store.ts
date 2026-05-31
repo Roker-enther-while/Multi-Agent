@@ -1,6 +1,8 @@
 import * as fs from "fs";
 import * as path from "path";
 
+import type { CollaborationData } from "./collaboration";
+
 export type RunStatus = "queued" | "running" | "completed" | "failed" | "blocked";
 export type RunMode = "plan_only" | "patch_mode";
 
@@ -23,6 +25,7 @@ export interface RunRecord {
     filesChanged: string[];
     testOutput: string;
   };
+  collaboration?: CollaborationData;
 }
 
 export class RunStore {

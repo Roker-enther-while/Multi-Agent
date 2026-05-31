@@ -11,6 +11,17 @@ import { runLlmAgent } from "../agents/llm_agent";
 import { validateAgentOutput } from "../agents/output_validator";
 import type { AgentName } from "../types/agents";
 import { loadGitHubConfig, createGitHubClient } from "../integrations/github/github_client";
+import {
+  createDefaultCollaboration,
+  addComment,
+  setApprovalState,
+  addDecisionLogEntry,
+  generateDecisionLogMarkdown,
+  type CollaborationData,
+  type UserRole,
+  type ApprovalState,
+  type Comment,
+} from "./collaboration";
 
 export interface ApiContext {
   rootDir: string;
@@ -87,6 +98,78 @@ export async function handleRequest(
     const provider = createProvider(config);
     const result = await provider.testConnection();
     return json(200, { ...result, provider: config.provider, modelName: config.modelName });
+  }
+
+  // GET /api/runs/:runId/comments
+  const commentsMatch = pathname.match(/^\/api\/runs\/([^/]+)\/comments$/);
+  if (method === "GET" && commentsMatch) {
+    const runId = commentsMatch[1];
+    const record = runStore.getRun(runId);
+    if (!record) return json(404, { error: "Run not found" });
+    if (!record.collaboration) record.collaboration = createDefaultCollaboration();
+    return json(200, { comments: record.collaboration.comments });
+  }
+
+  // POST /api/runs/:runId/comments
+  if (method === "POST" && commentsMatch) {
+    const runId = commentsMatch[1];
+    const record = runStore.getRun(runId);
+    if (!record) return json(404, { error: "Run not found" });
+    if (!record.collaboration) record.collaboration = createDefaultCollaboration();
+    const parsed = body ? parseBody(body) : null;
+    if (!parsed || typeof parsed !== "object") return json(400, { error: "Invalid JSON body" });
+    const { author, role, content, targetType, targetId } = parsed as {
+      author?: string; role?: string; content?: string; targetType?: string; targetId?: string;
+    };
+    if (!author || !content) return json(400, { error: "author and content required" });
+    const comment = addComment(
+      record.collaboration,
+      author,
+      (role as UserRole) || "developer",
+      content,
+      (targetType as Comment["targetType"]) || "run",
+      targetId
+    );
+    return json(201, comment);
+  }
+
+  // POST /api/runs/:runId/approve
+  const approveMatch = pathname.match(/^\/api\/runs\/([^/]+)\/approve$/);
+  if (method === "POST" && approveMatch) {
+    const runId = approveMatch[1];
+    const record = runStore.getRun(runId);
+    if (!record) return json(404, { error: "Run not found" });
+    if (!record.collaboration) record.collaboration = createDefaultCollaboration();
+    const parsed = body ? parseBody(body) : null;
+    const { actor, comments } = (parsed || {}) as { actor?: string; comments?: string };
+    setApprovalState(record.collaboration, "approved", actor || "reviewer", comments);
+    return json(200, { state: "approved" });
+  }
+
+  // POST /api/runs/:runId/request-changes
+  const changesMatch = pathname.match(/^\/api\/runs\/([^/]+)\/request-changes$/);
+  if (method === "POST" && changesMatch) {
+    const runId = changesMatch[1];
+    const record = runStore.getRun(runId);
+    if (!record) return json(404, { error: "Run not found" });
+    if (!record.collaboration) record.collaboration = createDefaultCollaboration();
+    const parsed = body ? parseBody(body) : null;
+    const { actor, comments } = (parsed || {}) as { actor?: string; comments?: string };
+    setApprovalState(record.collaboration, "changes_requested", actor || "reviewer", comments);
+    return json(200, { state: "changes_requested" });
+  }
+
+  // GET /api/runs/:runId/decision-log
+  const decisionLogMatch = pathname.match(/^\/api\/runs\/([^/]+)\/decision-log$/);
+  if (method === "GET" && decisionLogMatch) {
+    const runId = decisionLogMatch[1];
+    const record = runStore.getRun(runId);
+    if (!record) return json(404, { error: "Run not found" });
+    if (!record.collaboration) record.collaboration = createDefaultCollaboration();
+    return json(200, {
+      decisionLog: record.collaboration.decisionLog,
+      markdown: generateDecisionLogMarkdown(record.collaboration),
+    });
   }
 
   // GET /api/github/settings
