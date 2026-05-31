@@ -4,6 +4,7 @@ import { validateFinalDone, type FinalDoneValidation } from "../tools/final_done
 
 export interface DemoManifestOptions {
   repoRoot?: string;
+  htmlReportPath?: string;
 }
 
 export interface DemoManifest {
@@ -13,6 +14,7 @@ export interface DemoManifest {
   runDir: string;
   artifactCount: number;
   artifacts: Record<string, string>;
+  htmlReportPath?: string;
   verification: {
     total: number;
     passed: number;
@@ -63,6 +65,7 @@ export function buildDemoManifest(
     runDir: result.runDir,
     artifactCount: result.artifacts.length,
     artifacts,
+    htmlReportPath: options.htmlReportPath,
     verification: {
       total: result.state.verificationResults.length,
       passed: passed.length,

@@ -279,3 +279,28 @@
 - `cd src && npx tsc -p tsconfig.test.json` -> PASS
 - `cd src && npm test` -> 74/74 PASS
 - `cd src && npm run build` -> PASS
+
+---
+
+### Phase 9 - Report Viewer Artifact
+
+**Date:** 2026-05-31
+
+**Status:** COMPLETED
+
+**Goal:** Generate a single human-readable HTML report for demo/reporting.
+
+**Steps Completed:**
+1. Created HTML report generator.
+2. Wrote `.ai_runs/<runId>/report.html`.
+3. Included required workflow sections and traceability matrix.
+4. Added Mermaid code block rendering for visual model artifacts.
+5. Wired HTML report generation into the demo.
+6. Added tests.
+
+**Verification:**
+- `cd src && npm run lint` -> PASS
+- `cd src && npx tsc -p tsconfig.test.json` -> PASS
+- `cd src && npm test` -> 75/75 PASS
+- `cd src && npm run build` -> PASS
+- Demo generated `.ai_runs/end-to-end-demo/report.html` -> PASS

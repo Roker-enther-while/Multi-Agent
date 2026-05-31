@@ -2,22 +2,29 @@
 
 ## Current Actionable Next Step
 
-**Phase:** Phase 9 - Report Viewer Artifact
+**Phase:** Phase 10 - Evaluation Dataset for Agent Workflow
 
 **Priority:** HIGH
 
-**Action:** Generate a single human-readable HTML report for demo/reporting.
+**Action:** Create small benchmark tasks to evaluate workflow quality.
 
 ---
 
 ### Required:
 
-- Create HTML report generator.
-- Input: artifacts from one run.
-- Output: `.ai_runs/<runId>/report.html`
-- Include requirement, context pack, BA package, visual diagrams as Mermaid code blocks, task plan, test plan, verification, review, traceability matrix, final status.
-- No frontend app required.
-- Add tests for report generation.
+- Add `examples/evaluation_tasks/`.
+- Include at least 5 requirement files:
+  1. add health details endpoint
+  2. add validation rule
+  3. update API response field
+  4. add UI button requirement
+  5. add error handling requirement
+- Add expected artifact checklist per task.
+- Add evaluation script:
+  - checks artifacts generated
+  - checks required headings
+  - checks finalValidation
+- Add tests.
 
 ---
 
@@ -27,10 +34,10 @@
 - `npx tsc -p tsconfig.test.json`
 - `npm test`
 - `npm run build`
-- demo generates `report.html`
+- evaluation script runs on sample tasks
 
 ---
 
 ### Commit:
 
-`feat: add HTML workflow report generator`
+`feat: add workflow evaluation task set`

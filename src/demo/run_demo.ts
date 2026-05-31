@@ -1,5 +1,6 @@
 import { buildDemoManifest } from "./demo_manifest";
 import { runFullWorkflow } from "../orchestrator/full_workflow_runner";
+import { writeHtmlWorkflowReport } from "../tools/html_report_generator";
 
 const DEFAULT_REQUIREMENT = [
   "Create a traceable workflow report for a small software change,",
@@ -21,7 +22,12 @@ export async function runDemo(requirement: string = DEFAULT_REQUIREMENT): Promis
     ],
   });
 
-  const manifest = buildDemoManifest(result, { repoRoot: process.cwd() });
+  const htmlReport = writeHtmlWorkflowReport(result);
+
+  const manifest = buildDemoManifest(result, {
+    repoRoot: process.cwd(),
+    htmlReportPath: htmlReport.path,
+  });
   console.log(JSON.stringify(manifest, null, 2));
 }
 
