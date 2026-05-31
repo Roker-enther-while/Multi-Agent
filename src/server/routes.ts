@@ -4,6 +4,7 @@ import { runFullWorkflow } from "../orchestrator/full_workflow_runner";
 import { writeHtmlWorkflowReport } from "../tools/html_report_generator";
 import { buildDemoManifest } from "../demo/demo_manifest";
 import { runStore, type RunRecord } from "./run_store";
+import { loadModelConfig, createProvider } from "./model_provider";
 
 export interface ApiContext {
   rootDir: string;
@@ -76,11 +77,10 @@ export async function handleRequest(
 
   // POST /api/models/test-connection
   if (method === "POST" && pathname === "/api/models/test-connection") {
-    const provider = process.env.MODEL_PROVIDER || "mock";
-    if (provider === "mock") {
-      return json(200, { ok: true, provider: "mock", message: "Mock provider always available" });
-    }
-    return json(200, { ok: true, provider, message: "Connection test not yet implemented for non-mock providers" });
+    const config = loadModelConfig();
+    const provider = createProvider(config);
+    const result = await provider.testConnection();
+    return json(200, { ...result, provider: config.provider, modelName: config.modelName });
   }
 
   // POST /api/runs
