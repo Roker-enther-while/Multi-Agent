@@ -6,6 +6,10 @@ import { buildDemoManifest } from "../demo/demo_manifest";
 import { runStore, type RunRecord, type RunMode } from "./run_store";
 import { loadModelConfig, createProvider } from "./model_provider";
 import { applyPatch, snapshotFiles, getDiff, revertPatch, type PatchOperation } from "../tools/patch_applicator";
+import { getAgentNames } from "../prompts/prompt_assembler";
+import { runLlmAgent } from "../agents/llm_agent";
+import { validateAgentOutput } from "../agents/output_validator";
+import type { AgentName } from "../types/agents";
 
 export interface ApiContext {
   rootDir: string;
@@ -233,6 +237,94 @@ export async function handleRequest(
       testsPass: record.patchResult.testsPass,
       withinScope: record.patchResult.diff.split("\n").filter((l) => l.startsWith("+")).length < 50,
     });
+  }
+
+  // GET /api/agents
+  if (method === "GET" && pathname === "/api/agents") {
+    return json(200, {
+      agents: getAgentNames(),
+      executionMode: process.env.AGENT_EXECUTION_MODE || "mock",
+    });
+  }
+
+  // GET /api/agents/settings
+  if (method === "GET" && pathname === "/api/agents/settings") {
+    return json(200, {
+      executionMode: process.env.AGENT_EXECUTION_MODE || "mock",
+      provider: process.env.MODEL_PROVIDER || "mock",
+      modelName: process.env.MODEL_NAME || "mock-model",
+    });
+  }
+
+  // POST /api/agents/settings
+  if (method === "POST" && pathname === "/api/agents/settings") {
+    const parsed = body ? parseBody(body) : null;
+    if (!parsed || typeof parsed !== "object") {
+      return json(400, { error: "Invalid JSON body" });
+    }
+    const settings = parsed as Record<string, unknown>;
+    if (settings.executionMode) {
+      const mode = String(settings.executionMode);
+      if (["mock", "real", "hybrid"].includes(mode)) {
+        process.env.AGENT_EXECUTION_MODE = mode;
+      }
+    }
+    return json(200, { ok: true, executionMode: process.env.AGENT_EXECUTION_MODE || "mock" });
+  }
+
+  // POST /api/agents/test
+  if (method === "POST" && pathname === "/api/agents/test") {
+    const parsed = body ? parseBody(body) : null;
+    if (!parsed || typeof parsed !== "object") {
+      return json(400, { error: "Invalid JSON body" });
+    }
+    const { agentName, message } = parsed as { agentName?: string; message?: string };
+    if (!agentName || !message) {
+      return json(400, { error: "agentName and message required" });
+    }
+
+    const validAgents = getAgentNames();
+    if (!validAgents.includes(agentName as AgentName)) {
+      return json(400, { error: `Invalid agent name. Valid: ${validAgents.join(", ")}` });
+    }
+
+    const config = loadModelConfig();
+    const provider = createProvider(config);
+    const startTime = Date.now();
+
+    try {
+      const result = await runLlmAgent(
+        {
+          agentName: agentName as AgentName,
+          requirement: message,
+          artifacts: [],
+        },
+        provider,
+        config.modelName
+      );
+
+      const validation = validateAgentOutput(agentName as AgentName, result.content);
+
+      return json(200, {
+        status: result.status,
+        provider: result.provider,
+        model: result.model,
+        latencyMs: result.latencyMs,
+        outputPreview: result.content.slice(0, 500),
+        validation: {
+          passed: validation.valid,
+          missingSections: validation.missingSections,
+          warnings: validation.warnings,
+        },
+        retries: result.retries,
+      });
+    } catch (err) {
+      return json(500, {
+        status: "failed",
+        error: err instanceof Error ? err.message : "Unknown error",
+        latencyMs: Date.now() - startTime,
+      });
+    }
   }
 
   // GET /api/workspace/scan?path=...

@@ -114,6 +114,14 @@ header button:hover{background:#475569}
 <div class="settings-overlay" id="settingsOverlay">
   <div class="settings-modal">
     <h2>Model Settings</h2>
+    <label>Agent Execution Mode</label>
+    <select id="setExecMode">
+      <option value="mock">Mock (deterministic agents)</option>
+      <option value="real">Real LLM (calls provider for each agent)</option>
+      <option value="hybrid">Hybrid (mock first, LLM refines)</option>
+    </select>
+    <div style="font-size:11px;color:#64748b;margin-top:4px">Mock: fast, deterministic. Real: uses LLM for each agent. Hybrid: mock generates, LLM improves.</div>
+    <hr style="border-color:#334155;margin:12px 0">
     <label>Provider</label>
     <select id="setProvider" onchange="updateProviderHelp()">
       <option value="mock">Mock (default, no API key needed)</option>
@@ -343,6 +351,12 @@ async function loadSettings() {
   document.getElementById('setModelName').value = s.modelName;
   document.getElementById('setTemperature').value = s.temperature;
   document.getElementById('setMaxTokens').value = s.maxTokens;
+
+  // Load agent execution mode
+  try {
+    const agentSettings = await fetchJSON('/api/agents/settings');
+    document.getElementById('setExecMode').value = agentSettings.executionMode || 'mock';
+  } catch {}
 }
 
 function openSettings() {
@@ -367,6 +381,16 @@ async function saveSettings() {
       maxTokens: parseInt(document.getElementById('setMaxTokens').value),
     }),
   });
+
+  // Save agent execution mode
+  await fetchJSON('/api/agents/settings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      executionMode: document.getElementById('setExecMode').value,
+    }),
+  });
+
   closeSettings();
 }
 

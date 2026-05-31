@@ -1,20 +1,21 @@
 # NEXT STEP
 
-## REAL USER RELEASE DONE
+## v1.1 — Real LLM Execution
 
-**Date:** 2026-05-31
+**Goal:** Add real LLM agent execution mode alongside existing mock mode.
 
-All release conditions satisfied. The app is ready for real users.
+**Config:**
+- AGENT_EXECUTION_MODE=mock|real|hybrid
 
-### What a user can do:
-1. Clone repo, install, build, start server
-2. Open UI at http://localhost:3456
-3. Configure model provider (mock, OpenAI, Anthropic, Gemini, Ollama, LM Studio)
-4. Enter a software requirement and run workflow
-5. Choose plan_only or patch_mode
-6. View progress, artifacts, diff, tests, review, report
-7. Attach input files (text, markdown, JSON, images)
-8. Export run package as JSON
-9. View HTML report
+**Files to create:**
+- src/agents/llm_agent.ts — LLM agent runner
+- src/agents/agent_runner.ts — Agent execution dispatcher
+- src/prompts/prompt_assembler.ts — Prompt assembly from context
+- src/agents/output_validator.ts — Validate LLM output format
 
-### No further action required.
+**Files to modify:**
+- src/server/routes.ts — Add agent API endpoints
+- src/server/model_provider.ts — Add agent execution mode
+- src/server/public/index.html — Add execution mode setting
+
+**Verification:** Tests pass, mock mode works, real mode calls provider abstraction.
