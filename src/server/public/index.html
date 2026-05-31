@@ -91,7 +91,16 @@ header button:hover{background:#475569}
           <input id="workspaceInput" placeholder="Workspace path (e.g. examples/patch_targets/ts_mini_app)" style="flex:1;background:#1e293b;color:#e2e8f0;border:1px solid #334155;padding:6px 10px;border-radius:6px;font-size:13px;display:none" oninput="debounceScan()">
         <button id="scanBtn" onclick="scanWorkspace()" style="background:#334155;color:#e2e8f0;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:12px;display:none">Scan</button>
         </div>
-        <textarea id="requirementInput" rows="2" placeholder="Enter a software requirement..."></textarea>
+        <div style="display:flex;gap:6px;align-items:flex-start">
+          <textarea id="requirementInput" rows="2" placeholder="Enter a software requirement..." style="flex:1"></textarea>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <label style="background:#334155;color:#e2e8f0;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:12px;text-align:center">
+              📎 Attach
+              <input type="file" id="fileInput" multiple accept=".txt,.md,.json,.csv,.png,.jpg,.jpeg,.webp" style="display:none" onchange="handleFiles(this.files)">
+            </label>
+          </div>
+        </div>
+        <div id="attachedFiles" style="display:none;font-size:12px;color:#94a3b8;margin-top:4px"></div>
       </div>
       <button id="submitBtn" onclick="submitRequirement()">Run</button>
     </div>
@@ -239,16 +248,27 @@ async function submitRequirement() {
   const mode = modeSelect.value;
   const workspace = workspaceInput.value.trim();
 
-  addMessage('user', `${mode === 'patch_mode' ? '[Patch Mode] ' : ''}${requirement}`);
+  addMessage('user', `${mode === 'patch_mode' ? '[Patch Mode] ' : ''}${requirement}${attachedFiles.length ? ` (${attachedFiles.length} files attached)` : ''}`);
   input.value = '';
   btn.disabled = true;
   btn.textContent = 'Running...';
 
   try {
+    // Upload attached files first
+    let uploadedPaths = [];
+    if (attachedFiles.length > 0) {
+      uploadedPaths = await uploadFiles();
+    }
+
     const result = await fetchJSON('/api/runs', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ requirement, mode, workspace: workspace || undefined }),
+      body: JSON.stringify({
+        requirement,
+        mode,
+        workspace: workspace || undefined,
+        inputFiles: uploadedPaths.length > 0 ? uploadedPaths : undefined,
+      }),
     });
 
     addMessage('system', `<h4>Workflow Started</h4><p>Run ID: ${result.runId}</p><p>Status: <span class="status-badge running">running</span></p>`);
@@ -380,6 +400,40 @@ async function loadRecentWorkspace() {
 document.getElementById('requirementInput').addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitRequirement(); }
 });
+
+// File attachment
+let attachedFiles = [];
+
+function handleFiles(fileList) {
+  attachedFiles = [];
+  const el = document.getElementById('attachedFiles');
+  for (const file of fileList) {
+    attachedFiles.push(file);
+  }
+  if (attachedFiles.length > 0) {
+    el.style.display = 'block';
+    el.innerHTML = attachedFiles.map(f => `📎 ${f.name} (${(f.size/1024).toFixed(1)}KB)`).join(', ');
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+async function uploadFiles() {
+  const uploaded = [];
+  for (const file of attachedFiles) {
+    const content = await file.text();
+    const result = await fetchJSON('/api/files/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filename: file.name, content }),
+    });
+    if (result.ok) uploaded.push(result.path);
+  }
+  attachedFiles = [];
+  document.getElementById('attachedFiles').style.display = 'none';
+  document.getElementById('fileInput').value = '';
+  return uploaded;
+}
 
 // Init
 loadRuns();
