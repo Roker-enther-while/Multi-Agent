@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-31
 **Commit:** (pending)
-**Status:** REAL-WORLD VALIDATION DONE — Score 80.1/100
+**Status:** REAL CODE PATCH MODE DONE — 5/5 scenarios pass, avg 91/100
 
 ---
 
@@ -132,3 +132,27 @@ All 16 conditions satisfied:
 ### Reports:
 - `reports/real_world_validation.json`
 - `reports/real_world_validation.md`
+
+## REAL CODE PATCH MODE DONE
+
+**Scenarios:** 5 real code patch scenarios executed
+**Passed:** 5/5
+**Average Score:** 91/100
+
+### Scenarios Validated:
+1. Add health details function — 85/100 PASS
+2. Add email validation — 100/100 PASS
+3. Change response format — 100/100 PASS
+4. Add error handling — 85/100 PASS
+5. Fix bug: health check counter — 85/100 PASS
+
+### Infrastructure:
+- Sample app: `examples/patch_targets/ts_mini_app/` (real TypeScript app, 7 baseline tests)
+- Patch scenarios: `examples/patch_targets/patch_scenarios.json`
+- Patch applicator: `src/tools/patch_applicator.ts`
+- Patch scenario runner: `src/tools/patch_scenario_runner.ts`
+- Patch validation runner: `src/tools/run_patch_validation.ts`
+
+### Reports:
+- `reports/real_code_patch_validation.json`
+- `reports/real_code_patch_validation.md`

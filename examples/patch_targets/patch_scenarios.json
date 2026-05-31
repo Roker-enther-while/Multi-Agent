@@ -1,0 +1,92 @@
+[
+  {
+    "id": "patch-01-health-details",
+    "requirement": "Add a getHealthDetails() function that returns status, uptime, app_name ('ts-mini-app'), version ('1.0.0'), and environment (from NODE_ENV or 'development').",
+    "description": "Add health details function with app metadata",
+    "sourcePatch": {
+      "file": "src/app.ts",
+      "oldCode": "export function getHealth(): HealthStatus {\n  return {\n    status: \"ok\",\n    uptime: Date.now() - startTime,\n  };\n}",
+      "newCode": "export function getHealth(): HealthStatus {\n  return {\n    status: \"ok\",\n    uptime: Date.now() - startTime,\n  };\n}\n\nexport interface HealthDetails {\n  status: string;\n  uptime: number;\n  app_name: string;\n  version: string;\n  environment: string;\n}\n\nexport function getHealthDetails(): HealthDetails {\n  return {\n    status: \"ok\",\n    uptime: Date.now() - startTime,\n    app_name: \"ts-mini-app\",\n    version: \"1.0.0\",\n    environment: process.env.NODE_ENV || \"development\",\n  };\n}"
+    },
+    "testPatch": {
+      "file": "tests/app.test.ts",
+      "insertAfter": "describe(\"getHealth\", () => {",
+      "insertBlock": "\ndescribe(\"getHealthDetails\", () => {\n  test(\"returns app_name\", () => {\n    const result = getHealthDetails();\n    assert.equal(result.app_name, \"ts-mini-app\");\n  });\n\n  test(\"returns version\", () => {\n    const result = getHealthDetails();\n    assert.equal(result.version, \"1.0.0\");\n  });\n\n  test(\"returns environment\", () => {\n    const result = getHealthDetails();\n    assert.ok(typeof result.environment === \"string\");\n  });\n\n  test(\"returns status ok\", () => {\n    const result = getHealthDetails();\n    assert.equal(result.status, \"ok\");\n  });\n});\n"
+    },
+    "importPatch": {
+      "file": "tests/app.test.ts",
+      "oldImport": "import {\n  getHealth,\n  getUserById,\n  createUser,\n  getRequestCount,\n  formatUserResponse,\n  type User,\n} from \"../src/app.js\";",
+      "newImport": "import {\n  getHealth,\n  getHealthDetails,\n  getUserById,\n  createUser,\n  getRequestCount,\n  formatUserResponse,\n  type User,\n} from \"../src/app.js\";"
+    }
+  },
+  {
+    "id": "patch-02-validation",
+    "requirement": "Add email validation to createUser() that rejects emails not containing '@'. Return error 'Invalid email format'.",
+    "description": "Add email format validation",
+    "sourcePatch": {
+      "file": "src/app.ts",
+      "oldCode": "export function createUser(name: string, email: string): ApiResponse<User> {\n  requestCount++;\n  if (!name || !email) {\n    return { success: false, error: \"Name and email are required\" };\n  }",
+      "newCode": "export function createUser(name: string, email: string): ApiResponse<User> {\n  requestCount++;\n  if (!name || !email) {\n    return { success: false, error: \"Name and email are required\" };\n  }\n  if (!email.includes(\"@\")) {\n    return { success: false, error: \"Invalid email format\" };\n  }"
+    },
+    "testPatch": {
+      "file": "tests/app.test.ts",
+      "insertAfter": "test(\"rejects empty email\", () => {",
+      "insertBlock": "\n\n  test(\"rejects invalid email format\", () => {\n    const result = createUser(\"Eve\", \"eve-at-example.com\");\n    assert.equal(result.success, false);\n    assert.equal(result.error, \"Invalid email format\");\n  });"
+    }
+  },
+  {
+    "id": "patch-03-response-field",
+    "requirement": "Change formatUserResponse() to return 'User: NAME (EMAIL)' instead of 'NAME <EMAIL>'.",
+    "description": "Change response format",
+    "sourcePatch": {
+      "file": "src/app.ts",
+      "oldCode": "export function formatUserResponse(user: User): string {\n  return `${user.name} <${user.email}>`;\n}",
+      "newCode": "export function formatUserResponse(user: User): string {\n  return `User: ${user.name} (${user.email})`;\n}"
+    },
+    "testPatch": {
+      "file": "tests/app.test.ts",
+      "oldCode": "  test(\"formats user as name <email>\", () => {\n    const user: User = { id: 1, name: \"Alice\", email: \"alice@example.com\" };\n    assert.equal(formatUserResponse(user), \"Alice <alice@example.com>\");\n  });",
+      "newCode": "  test(\"formats user as User: NAME (EMAIL)\", () => {\n    const user: User = { id: 1, name: \"Alice\", email: \"alice@example.com\" };\n    assert.equal(formatUserResponse(user), \"User: Alice (alice@example.com)\");\n  });"
+    }
+  },
+  {
+    "id": "patch-04-error-handling",
+    "requirement": "Add try-catch error handling to getUserById() that catches non-number id input and returns error 'Invalid user ID'.",
+    "description": "Add error handling for invalid input types",
+    "sourcePatch": {
+      "file": "src/app.ts",
+      "oldCode": "export function getUserById(id: number): ApiResponse<User> {\n  requestCount++;\n  const user = users.get(id);\n  if (!user) {\n    return { success: false, error: \"User not found\" };\n  }\n  return { success: true, data: user };\n}",
+      "newCode": "export function getUserById(id: number): ApiResponse<User> {\n  requestCount++;\n  if (typeof id !== \"number\" || isNaN(id)) {\n    return { success: false, error: \"Invalid user ID\" };\n  }\n  const user = users.get(id);\n  if (!user) {\n    return { success: false, error: \"User not found\" };\n  }\n  return { success: true, data: user };\n}"
+    },
+    "testPatch": {
+      "file": "tests/app.test.ts",
+      "insertAfter": "test(\"returns error for non-existent user\", () => {",
+      "insertBlock": "\n\n  test(\"returns error for invalid id type\", () => {\n    const result = getUserById(NaN);\n    assert.equal(result.success, false);\n    assert.equal(result.error, \"Invalid user ID\");\n  });"
+    }
+  },
+  {
+    "id": "patch-05-fix-bug",
+    "requirement": "Fix the bug where getRequestCount() returns the count but does not include the health check calls. Add a separate getHealthCheckCount() function that tracks health endpoint calls separately.",
+    "description": "Fix: add separate health check counter",
+    "sourcePatch": {
+      "file": "src/app.ts",
+      "oldCode": "let requestCount = 0;\nconst startTime = Date.now();",
+      "newCode": "let requestCount = 0;\nlet healthCheckCount = 0;\nconst startTime = Date.now();"
+    },
+    "sourcePatch2": {
+      "file": "src/app.ts",
+      "oldCode": "export function getHealth(): HealthStatus {\n  return {\n    status: \"ok\",\n    uptime: Date.now() - startTime,\n  };\n}",
+      "newCode": "export function getHealth(): HealthStatus {\n  healthCheckCount++;\n  return {\n    status: \"ok\",\n    uptime: Date.now() - startTime,\n  };\n}\n\nexport function getHealthCheckCount(): number {\n  return healthCheckCount;\n}"
+    },
+    "testPatch": {
+      "file": "tests/app.test.ts",
+      "insertAfter": "describe(\"getHealth\", () => {",
+      "insertBlock": "\n  test(\"increments health check count\", () => {\n    const before = getHealthCheckCount();\n    getHealth();\n    const after = getHealthCheckCount();\n    assert.equal(after, before + 1);\n  });"
+    },
+    "importPatch": {
+      "file": "tests/app.test.ts",
+      "oldImport": "import {\n  getHealth,\n  getUserById,\n  createUser,\n  getRequestCount,\n  formatUserResponse,\n  type User,\n} from \"../src/app.js\";",
+      "newImport": "import {\n  getHealth,\n  getHealthCheckCount,\n  getUserById,\n  createUser,\n  getRequestCount,\n  formatUserResponse,\n  type User,\n} from \"../src/app.js\";"
+    }
+  }
+]

@@ -4,41 +4,42 @@
 
 **Date:** 2026-05-31
 
-**Phase:** Real-World Validation Improvement Loop 2
+**Phase:** Real Code Patch Mode
 
-**Task:** Improve validation score from 68.0 to >= 80.0.
+**Task:** Prove the system can apply real code changes, run tests, review diffs, and produce traceability.
 
 ---
 
-### IMPROVEMENTS MADE:
+### RESULTS:
 
-1. **Context pack**: Added requirement analysis (type, subject, endpoints, fields, constraints) and "Likely Relevant Files" section with type-based and keyword-based file matching.
+- Scenarios executed: 5/5
+- Scenarios passed: 5/5
+- Average score: 91/100
 
-2. **Test plans**: Added 4 categories (Positive, Negative, Edge Cases, Regression) with type-specific test cases for all 10 requirement types.
+### SCENARIO DETAILS:
 
-3. **Implementation guidance**: Added concrete file-level steps for all 10 types. Type-specific file lists and step-by-step instructions.
-
-4. **Code review**: Added requirement coverage section, type-specific findings for all 10 types, and risk assessment.
-
-5. **Type detection**: Fixed docs type detection (moved before endpoint check). Tightened endpoint regex to avoid false positives.
-
-### SCORES:
-
-| Dimension | v1 | v2 | v3 |
+| ID | Description | Score | Status |
 |---|---|---|---|
-| Context relevance | 45 | 50 | 77 |
-| Artifact completeness | 19 | 77.5 | 84 |
-| Test plan usefulness | 5 | 69.5 | 80 |
-| Implementation readiness | 5 | 69.5 | 80 |
-| Review usefulness | 5 | 73.5 | 79.5 |
-| **Overall** | **15.8** | **68.0** | **80.1** |
+| patch-01 | Add health details function | 85 | PASS |
+| patch-02 | Add email validation | 100 | PASS |
+| patch-03 | Change response format | 100 | PASS |
+| patch-04 | Add error handling | 85 | PASS |
+| patch-05 | Fix bug: health check counter | 85 | PASS |
+
+### INFRASTRUCTURE CREATED:
+
+1. **Sample app**: `examples/patch_targets/ts_mini_app/` — real TypeScript app with 7 baseline tests
+2. **Patch scenarios**: `examples/patch_targets/patch_scenarios.json` — 5 deterministic patch definitions
+3. **Patch applicator**: `src/tools/patch_applicator.ts` — string-based patch application and diff generation
+4. **Patch scenario runner**: `src/tools/patch_scenario_runner.ts` — orchestrates patch → build → test → workflow → review
+5. **Patch validation runner**: `src/tools/run_patch_validation.ts` — CLI script to run all scenarios
 
 ### COMMANDS RUN:
 - `cd src && npm run lint` -> PASS
 - `cd src && npm run build` -> PASS
 - `cd src && npm test` -> PASS, 77/77
-- 10x `node src/dist/cli.js run --requirement "..." --run-id v3-sXX` -> ALL PASS
 - `node src/dist/evaluation/run_evaluation.js` -> PASS, 5/5
+- `node src/dist/tools/run_patch_validation.js` -> PASS, 5/5 (avg 91/100)
 
-### REAL-WORLD VALIDATION DONE:
-PASS — Overall score 80.1/100 (target: >= 80%). Artifact completeness 84% (target: >= 85% preferred).
+### REAL CODE PATCH MODE DONE:
+PASS — 5/5 scenarios pass, average score 91/100, no fake passes, main project tests still pass.

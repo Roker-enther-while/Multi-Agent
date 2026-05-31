@@ -560,3 +560,40 @@
 - `cd src && npm test` -> PASS, 77/77
 - 10x CLI run -> ALL PASS
 - `node src/dist/evaluation/run_evaluation.js` -> PASS, 5/5
+
+---
+
+### Real Code Patch Mode
+
+**Date:** 2026-05-31
+
+**Status:** COMPLETED
+
+**Goal:** Prove the system can apply real code changes, run tests, review diffs, and produce traceability.
+
+**Infrastructure Created:**
+1. Sample app: `examples/patch_targets/ts_mini_app/` — real TypeScript app with 7 baseline tests
+2. Patch scenarios: `examples/patch_targets/patch_scenarios.json` — 5 deterministic patch definitions
+3. Patch applicator: `src/tools/patch_applicator.ts` — string-based patch application and diff generation
+4. Patch scenario runner: `src/tools/patch_scenario_runner.ts` — orchestrates patch → build → test → workflow → review
+5. Patch validation runner: `src/tools/run_patch_validation.ts` — CLI script to run all scenarios
+
+**Scenarios:**
+1. Add health details function — 85/100 PASS
+2. Add email validation — 100/100 PASS
+3. Change response format — 100/100 PASS
+4. Add error handling — 85/100 PASS
+5. Fix bug: health check counter — 85/100 PASS
+
+**Average Score:** 91/100
+
+**Verification:**
+- `cd src && npm run lint` -> PASS
+- `cd src && npm run build` -> PASS
+- `cd src && npm test` -> PASS, 77/77
+- `node src/dist/evaluation/run_evaluation.js` -> PASS, 5/5
+- `node src/dist/tools/run_patch_validation.js` -> PASS, 5/5 (avg 91/100)
+
+**Reports Generated:**
+- `reports/real_code_patch_validation.json`
+- `reports/real_code_patch_validation.md`

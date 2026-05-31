@@ -1,0 +1,69 @@
+{
+  "date": "2026-05-31T11:25:08.892Z",
+  "scenarioCount": 5,
+  "passed": 5,
+  "failed": 0,
+  "averageScore": 91,
+  "scenarios": [
+    {
+      "id": "patch-01-health-details",
+      "requirement": "Add a getHealthDetails() function that returns status, uptime, app_name ('ts-mini-app'), version ('1.0.0'), and environment (from NODE_ENV or 'development').",
+      "status": "pass",
+      "score": 85,
+      "patchApplied": true,
+      "testsAdded": true,
+      "testsPass": true,
+      "diffWithinScope": false,
+      "reviewUseful": true,
+      "traceabilityComplete": true
+    },
+    {
+      "id": "patch-02-validation",
+      "requirement": "Add email validation to createUser() that rejects emails not containing '@'. Return error 'Invalid email format'.",
+      "status": "pass",
+      "score": 100,
+      "patchApplied": true,
+      "testsAdded": true,
+      "testsPass": true,
+      "diffWithinScope": true,
+      "reviewUseful": true,
+      "traceabilityComplete": true
+    },
+    {
+      "id": "patch-03-response-field",
+      "requirement": "Change formatUserResponse() to return 'User: NAME (EMAIL)' instead of 'NAME <EMAIL>'.",
+      "status": "pass",
+      "score": 100,
+      "patchApplied": true,
+      "testsAdded": true,
+      "testsPass": true,
+      "diffWithinScope": true,
+      "reviewUseful": true,
+      "traceabilityComplete": true
+    },
+    {
+      "id": "patch-04-error-handling",
+      "requirement": "Add try-catch error handling to getUserById() that catches non-number id input and returns error 'Invalid user ID'.",
+      "status": "pass",
+      "score": 85,
+      "patchApplied": true,
+      "testsAdded": true,
+      "testsPass": true,
+      "diffWithinScope": false,
+      "reviewUseful": true,
+      "traceabilityComplete": true
+    },
+    {
+      "id": "patch-05-fix-bug",
+      "requirement": "Fix the bug where getRequestCount() returns the count but does not include the health check calls. Add a separate getHealthCheckCount() function that tracks health endpoint calls separately.",
+      "status": "pass",
+      "score": 85,
+      "patchApplied": true,
+      "testsAdded": true,
+      "testsPass": true,
+      "diffWithinScope": false,
+      "reviewUseful": true,
+      "traceabilityComplete": true
+    }
+  ]
+}
