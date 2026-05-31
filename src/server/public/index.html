@@ -184,9 +184,7 @@ function showDetail(run) {
     if (run.patchResult.filesChanged?.length) {
       html += `<p>Files Changed: ${run.patchResult.filesChanged.join(', ')}</p>`;
     }
-    if (run.patchResult.diff) {
-      html += `<h4>Diff</h4><pre>${esc(run.patchResult.diff)}</pre>`;
-    }
+    html += `<p class="artifact-link" onclick="viewDiff('${run.runId}')">View Diff →</p>`;
   }
 
   html += `<h4>Artifacts (${run.artifactCount})</h4>`;
@@ -207,6 +205,21 @@ async function viewArtifact(runId, type) {
   const content = document.getElementById('detailContent');
   panel.classList.remove('hidden');
   content.innerHTML = `<h4>${type}</h4><pre>${esc(data.content)}</pre><p><a href="#" onclick="selectRun('${runId}');return false">← Back to run</a></p>`;
+}
+
+async function viewDiff(runId) {
+  const data = await fetchJSON(`/api/runs/${runId}/diff`);
+  const panel = document.getElementById('detailPanel');
+  const content = document.getElementById('detailContent');
+  panel.classList.remove('hidden');
+  let html = `<h4>Diff</h4>`;
+  html += `<p>Files Changed: ${data.filesChanged?.join(', ') || 'none'}</p>`;
+  html += `<p>Applied: ${data.applied ? '✅' : '❌'}</p>`;
+  html += `<p>Tests Pass: ${data.testsPass ? '✅' : '❌'}</p>`;
+  html += `<p>Within Scope: ${data.withinScope ? '✅' : '❌'}</p>`;
+  html += `<h4>Unified Diff</h4><pre>${esc(data.diff || 'No diff available')}</pre>`;
+  html += `<p><a href="#" onclick="selectRun('${runId}');return false">← Back to run</a></p>`;
+  content.innerHTML = html;
 }
 
 function closeDetail() {

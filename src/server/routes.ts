@@ -176,6 +176,22 @@ export async function handleRequest(
     }
   }
 
+  // GET /api/runs/:runId/diff
+  const diffMatch = pathname.match(/^\/api\/runs\/([^/]+)\/diff$/);
+  if (method === "GET" && diffMatch) {
+    const runId = diffMatch[1];
+    const record = runStore.getRun(runId);
+    if (!record) return json(404, { error: "Run not found" });
+    if (!record.patchResult) return json(404, { error: "No patch result for this run" });
+    return json(200, {
+      diff: record.patchResult.diff,
+      filesChanged: record.patchResult.filesChanged,
+      applied: record.patchResult.applied,
+      testsPass: record.patchResult.testsPass,
+      withinScope: record.patchResult.diff.split("\n").filter((l) => l.startsWith("+")).length < 50,
+    });
+  }
+
   // GET /api/workspace/scan?path=...
   if (method === "GET" && pathname === "/api/workspace/scan") {
     const workspacePath = urlObj.searchParams.get("path");
