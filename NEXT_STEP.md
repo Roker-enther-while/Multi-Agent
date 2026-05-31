@@ -2,45 +2,41 @@
 
 ## Current Actionable Next Step
 
-**Phase:** Phase 1 - Tool Integration
+**Phase:** Phase 2 - Full Agent Implementation
 
 **Priority:** HIGH
 
-**Action:** Add deterministic local tools that agents and the orchestrator can use for file reading, code inspection, test execution, and report generation.
+**Action:** Implement deterministic logical agents and coordinator wiring on top of the Phase 0 orchestrator and Phase 1 local tools.
 
 ---
 
 ### What to Build:
 
-1. **src/tools/file_reader.ts**
-   - Read UTF-8 text files safely inside the repository.
-   - Return structured file metadata and content.
-   - Reject path traversal and missing files clearly.
+1. **src/agents/mock_agents.ts**
+   - Implement local deterministic agents for context reading, planning, test design, implementation summary, verification, code review, and traceability.
+   - Extend `BaseAgent`.
+   - Use structured `AgentInput`, `AgentOutput`, and `AgentRunResult`.
 
-2. **src/tools/code_inspector.ts**
-   - Inspect project files using configured include/exclude patterns.
-   - Produce a compact repository summary for context packs.
-   - Avoid `node_modules`, `dist`, `.git`, and generated run artifacts.
+2. **src/orchestrator/agent_coordinator.ts**
+   - Execute logical agents sequentially.
+   - Pass artifact paths between agents.
+   - Track state, decisions, findings, and blockers.
 
-3. **src/tools/command_runner.ts**
-   - Run verification commands with timeout support.
-   - Return `VerificationResult` objects.
-   - Capture stdout, stderr, exit code, duration, and timestamp.
-
-4. **src/tools/report_generator.ts**
-   - Generate Markdown reports from workflow state and artifacts.
-   - Include traceability, verification evidence, blockers, and decisions.
+3. **src/orchestrator/full_workflow_runner.ts**
+   - Run requirement -> context -> plan -> tests -> implementation summary -> verification -> review -> final report.
+   - Use local tools only.
+   - Write all artifacts to `.ai_runs/`.
 
 ---
 
 ### Success Criteria:
 
-- [ ] Tools are deterministic and local-only.
-- [ ] File reads are constrained to the repository root.
-- [ ] Code inspection excludes generated/dependency directories.
-- [ ] Command runner returns structured verification results.
-- [ ] Report generator produces a traceability-focused Markdown report.
-- [ ] Unit tests cover success and failure paths.
+- [ ] Agents return structured `AgentRunResult` objects.
+- [ ] Coordinator runs agents sequentially with traceable inputs/outputs.
+- [ ] Workflow writes context pack, task plan, test plan, implementation summary, verification report, code review report, traceability report, and final report.
+- [ ] Verification command results are recorded in `ProjectState`.
+- [ ] Code review is generated.
+- [ ] Unit tests cover successful full workflow and failure/blocker behavior.
 - [ ] TypeScript build passes.
 - [ ] Tests pass.
 
@@ -48,12 +44,12 @@
 
 ### Do NOT:
 
-- Add real LLM calls.
+- Add real LLM calls yet.
 - Add network-dependent tools.
 - Add parallel agent execution.
-- Execute destructive shell commands.
+- Modify application product features outside the workflow core.
 
-**First give agents safe local tools before implementing real agent coordination.**
+**First prove the complete agent chain deterministically before adding real LLM integration.**
 
 ---
 
@@ -64,4 +60,5 @@
 - Artifact store
 - Prompt registry
 - Project Manager orchestrator scaffold
-- Phase 0 tests passing (44/44)
+- Local tool integration
+- Phase 1 tests passing (54/54)

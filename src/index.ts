@@ -14,6 +14,10 @@ export * from "./state/project_state";
 
 // Tools
 export * from "./tools/artifact_store";
+export * from "./tools/file_reader";
+export * from "./tools/code_inspector";
+export * from "./tools/command_runner";
+export * from "./tools/report_generator";
 
 // Prompts
 export * from "./prompts/index";

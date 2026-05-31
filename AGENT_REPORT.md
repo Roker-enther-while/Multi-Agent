@@ -4,37 +4,39 @@
 
 **Date:** 2026-05-31
 
-**Phase:** Phase 0 - Project Manager Orchestrator Scaffold
+**Phase:** Phase 1 - Tool Integration
 
-**Task:** Create a minimal orchestrator scaffold that proves the PM workflow can manage and document a requirement from input to traceability report.
+**Task:** Add deterministic local tools for file reading, code inspection, command execution, and report generation.
 
 ---
 
 ### DONE:
-- Created `src/agents/base_agent.ts` with `WorkflowAgent`, `AgentValidationResult`, and `BaseAgent`.
-- Created `src/orchestrator/pm_orchestrator.ts` with `PMOrchestrator`.
-- Created `src/orchestrator/workflow_runner.ts` with `runWorkflow()`.
-- Updated `src/index.ts` exports.
-- Added orchestrator and base agent tests.
-- Added `.ai_runs/` to `.gitignore` for generated workflow artifacts.
-- Ran a sample Phase 0 workflow into `.ai_runs/phase-0-demo`.
+- Created `src/tools/file_reader.ts` for safe UTF-8 reads constrained to a repository root.
+- Created `src/tools/code_inspector.ts` for deterministic project file summaries.
+- Created `src/tools/command_runner.ts` for structured verification command execution.
+- Created `src/tools/report_generator.ts` for Markdown traceability reports.
+- Exported all Phase 1 tools from `src/index.ts`.
+- Added unit tests for success and failure paths.
 
 ### EVIDENCE:
-- Requirement accepted: PASS
-- ProjectState created and completed: PASS
-- Context Pack created: PASS
-- Task Plan created: PASS
-- Traceability Report created: PASS
-- Artifacts written under `.ai_runs/phase-0-demo`: PASS
-- Tests: 44/44 PASS
+- File reads inside root: PASS
+- Path traversal rejection: PASS
+- Missing file handling: PASS
+- Code inspection excludes `node_modules`, `dist`, `.git`, `.ai_runs`, `.next`: PASS
+- Command runner captures stdout, stderr, exit code, duration, timestamp: PASS
+- Destructive command patterns rejected: PASS
+- Report generator includes traceability, verification, decisions, blockers: PASS
+- Tests: 54/54 PASS
 
 ### CHANGED FILES:
-- `.gitignore`
-- `src/agents/base_agent.ts`
-- `src/agents/base_agent.test.ts`
-- `src/orchestrator/pm_orchestrator.ts`
-- `src/orchestrator/pm_orchestrator.test.ts`
-- `src/orchestrator/workflow_runner.ts`
+- `src/tools/file_reader.ts`
+- `src/tools/file_reader.test.ts`
+- `src/tools/code_inspector.ts`
+- `src/tools/code_inspector.test.ts`
+- `src/tools/command_runner.ts`
+- `src/tools/command_runner.test.ts`
+- `src/tools/report_generator.ts`
+- `src/tools/report_generator.test.ts`
 - `src/index.ts`
 - `AGENT_REPORT.md`
 - `NEXT_STEP.md`
@@ -43,20 +45,18 @@
 ### VERIFICATION:
 - Command: `cd src && npm run lint` -> PASS
 - Command: `cd src && npx tsc -p tsconfig.test.json` -> PASS
-- Command: `cd src && npm test` -> PASS, 44/44 tests
+- Command: `cd src && npm test` -> PASS, 54/54 tests
 - Command: `cd src && npm run build` -> PASS
-- Command: `node -e "const { runWorkflow } = require('./src/dist'); ..."` -> PASS, wrote requirement, context_pack, task_plan, traceability_report
 
 ### COMMIT:
 ```
-feat: add project manager orchestrator scaffold
+feat: add deterministic local workflow tools
 ```
 
 ### STILL MISSING:
-- Phase 1 - Tool Integration
 - Phase 2 - Full Agent Implementation
 - Phase 3 - End-to-End Demo
 - Phase 4 - Polish & Extend
 
 ### NEXT SMALL STEP:
-Phase 1 - Tool Integration
+Phase 2 - Full Agent Implementation
