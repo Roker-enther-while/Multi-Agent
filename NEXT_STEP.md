@@ -1,34 +1,20 @@
 # NEXT STEP
 
-## PRODUCTIZATION DONE
+## Mini-Phase: CLI run/report/validate should generate HTML report
 
-**Date:** 2026-05-31
+**Problem:** The `cli run` command runs the full workflow and produces all markdown artifacts, but does NOT generate `report.html`. Only `run_demo.js` generates it. A real user using `cli run` gets no HTML report.
 
-The productization roadmap is complete. No further phase is required.
+**Improvement:** Add `writeHtmlWorkflowReport(result)` call to `runCommand`, `validateCommand`, and `reportCommand` in `cli.ts`. Include `htmlReportPath` in CLI output.
 
-### Final Evidence
+**Files likely affected:**
+- `src/cli.ts` — add HTML report generation to run/validate/report commands
 
-- `AGENTS.md` committed
-- Phases 5 through 12 complete
-- Tests pass: 77/77
-- Build passes
-- Demo passes
-- CLI help works
-- HTML report generated at `.ai_runs/end-to-end-demo/report.html`
-- Evaluation sample works: 5/5 tasks
-- Thesis/demo docs are ready
-- `AGENT_REPORT.md` and `PHASE_LOG.md` are updated
+**Verification commands:**
+- `cd src && npm run lint`
+- `cd src && npx tsc -p tsconfig.test.json`
+- `cd src && npm test`
+- `cd src && npm run build`
+- `node src/dist/cli.js run --requirement "Test HTML report generation" --run-id html-test`
+- Verify `.ai_runs/html-test/report.html` exists
 
-### Verification Commands
-
-- `cd src && npm run lint` -> PASS
-- `cd src && npx tsc -p tsconfig.test.json` -> PASS
-- `cd src && npm test` -> PASS
-- `cd src && npm run build` -> PASS
-- `node src/dist/cli.js --help` -> PASS
-- `node src/dist/demo/run_demo.js` -> PASS
-- `node src/dist/evaluation/run_evaluation.js` -> PASS
-
-### Stop Condition
-
-PRODUCTIZATION DONE is satisfied. Continue only when a new roadmap or requirement is provided.
+**Done condition:** All three CLI commands (run, validate, report) generate `report.html` in the run directory. All tests pass. Output includes `htmlReportPath`.

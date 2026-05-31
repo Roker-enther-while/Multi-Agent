@@ -8,6 +8,7 @@ import { readTextFile } from "./tools/file_reader";
 import { generateWorkflowReport } from "./tools/report_generator";
 import { validateFinalDone } from "./tools/final_done_validator";
 import { normalizeRequirementInput, type RequirementInputSourceType } from "./tools/input_source";
+import { writeHtmlWorkflowReport } from "./tools/html_report_generator";
 
 export type CliCommand = "run" | "demo" | "validate" | "inspect" | "report";
 
@@ -153,12 +154,14 @@ function getRequirement(parsed: ParsedCli, cwd: string, required: boolean = true
 
 async function runCommand(parsed: ParsedCli, cwd: string): Promise<CliExecutionResult> {
   const result = await runFullWorkflow(getRequirement(parsed, cwd), workflowOptions(parsed, cwd));
-  const manifest = buildDemoManifest(result, { repoRoot: cwd });
+  const htmlReport = writeHtmlWorkflowReport(result);
+  const manifest = buildDemoManifest(result, { repoRoot: cwd, htmlReportPath: htmlReport.path });
   const lines = [
     `status=${result.state.status}`,
     `runDir=${result.runDir}`,
     "artifacts:",
     ...result.artifacts.map((artifact) => `- ${artifact.type}: ${artifact.path}`),
+    `htmlReport=${htmlReport.path}`,
     `finalValidation=${manifest.finalValidation.passed}`,
   ];
 
@@ -193,6 +196,7 @@ async function demoCommand(parsed: ParsedCli, cwd: string): Promise<CliExecution
 
 async function validateCommand(parsed: ParsedCli, cwd: string): Promise<CliExecutionResult> {
   const result = await runFullWorkflow(getRequirement(parsed, cwd), workflowOptions(parsed, cwd));
+  writeHtmlWorkflowReport(result);
   const validation = validateFinalDone(result, { repoRoot: cwd });
   const output = JSON.stringify(validation, null, 2);
   return validation.passed ? ok(output) : fail(output);
@@ -212,6 +216,7 @@ function inspectCommand(parsed: ParsedCli, cwd: string): CliExecutionResult {
 
 async function reportCommand(parsed: ParsedCli, cwd: string): Promise<CliExecutionResult> {
   const result = await runFullWorkflow(getRequirement(parsed, cwd), workflowOptions(parsed, cwd));
+  const htmlReport = writeHtmlWorkflowReport(result);
   const report = generateWorkflowReport(result.state, {
     title: "CLI Workflow Report",
     artifacts: result.artifacts,
@@ -221,6 +226,7 @@ async function reportCommand(parsed: ParsedCli, cwd: string): Promise<CliExecuti
   const lines = [
     `status=${result.state.status}`,
     `report=${reportPath}`,
+    `htmlReport=${htmlReport.path}`,
     "artifacts:",
     ...result.artifacts.map((artifact) => `- ${artifact.type}: ${artifact.path}`),
   ];

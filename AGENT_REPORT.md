@@ -4,52 +4,47 @@
 
 **Date:** 2026-05-31
 
-**Phase:** Phase 12 - Productization Final Audit
+**Phase:** Release Hardening Loop 1 - CLI HTML Report Generation
 
-**Task:** Validate the productization roadmap is complete.
+**Task:** Make CLI run/validate/report commands generate report.html (previously only demo did).
 
 ---
 
-### DONE:
-- Updated final validation with productization checks:
-  - CLI help
-  - demo
-  - HTML report
-  - BA/visual artifacts
-  - senior gates
-  - evaluation task set
-  - docs
-- Added productization validation tests.
-- Ran all required verification commands.
-- Confirmed demo generates `report.html`.
-- Confirmed evaluation script passes all 5 sample tasks.
+### GAP SELECTED:
+CLI `run`, `validate`, and `report` commands did not generate `report.html`. Only `run_demo.js` generated it. A real user using the CLI would not get the HTML report.
 
-### EVIDENCE:
-- AGENTS.md committed: PASS
-- Phases 5 through 12 complete: PASS
-- Tests: 77/77 PASS
-- Build: PASS
-- Demo: PASS
-- CLI help: PASS
-- HTML report generated: PASS
-- Evaluation sample: PASS, 5/5 tasks
-- Thesis/demo docs ready: PASS
+### CHANGES MADE:
+- Added `writeHtmlWorkflowReport(result)` call to `runCommand`, `validateCommand`, and `reportCommand` in `src/cli.ts`.
+- Imported `writeHtmlWorkflowReport` from `./tools/html_report_generator`.
+- CLI output now includes `htmlReport=<path>` line.
 
-### VERIFICATION:
+### COMMANDS RUN:
 - `cd src && npm run lint` -> PASS
-- `cd src && npx tsc -p tsconfig.test.json` -> PASS
-- `cd src && npm test` -> PASS, 77/77 tests
 - `cd src && npm run build` -> PASS
-- `node src/dist/cli.js --help` -> PASS
+- `cd src && npm test` -> PASS, 77/77
+- `node src/dist/cli.js run --requirement "..." --run-id html-verify` -> PASS
+- `node src/dist/cli.js report --requirement "..." --run-id report-cmd-test` -> PASS
+- `node src/dist/cli.js validate --requirement "..." --run-id validate-test` -> PASS
 - `node src/dist/demo/run_demo.js` -> PASS
-- `node src/dist/evaluation/run_evaluation.js` -> PASS
+- `node src/dist/evaluation/run_evaluation.js` -> PASS, 5/5
 
-### COMMIT:
-```
-docs: finalize productization audit
-```
+### VERIFICATION RESULT:
+ALL PASS
 
-### PRODUCTIZATION DONE:
-PASS
+### REAL PRODUCT RUN RESULT:
+- `cli run` generates `.ai_runs/html-verify/report.html` (16676 bytes) -> PASS
+- `cli report` generates `.ai_runs/report-cmd-test/report.html` -> PASS
+- `cli validate` generates `.ai_runs/validate-test/report.html` (16316 bytes) -> PASS
+- `cli run` output includes `htmlReport=` path -> PASS
 
-The productization roadmap is complete and mechanically verified.
+### GENERATED ARTIFACT PATHS:
+- `.ai_runs/html-verify/report.html`
+- `.ai_runs/report-cmd-test/report.html`
+- `.ai_runs/validate-test/report.html`
+- `.ai_runs/end-to-end-demo/report.html`
+
+### REMAINING ISSUES:
+- Continue to next hardening loop for additional gaps.
+
+### NEXT SELECTED GAP:
+Inspect HTML report content completeness and docs alignment.

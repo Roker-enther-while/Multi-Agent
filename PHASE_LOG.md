@@ -398,3 +398,31 @@
 6. Evaluation sample works.
 7. Thesis/demo documentation is ready.
 8. Reports and logs are updated.
+
+---
+
+### Release Hardening Loop 1 - CLI HTML Report Generation
+
+**Date:** 2026-05-31
+
+**Status:** COMPLETED
+
+**Goal:** Make CLI run/validate/report commands generate report.html (previously only demo did).
+
+**Problem:** CLI `run`, `validate`, and `report` commands did not generate `report.html`. Only `run_demo.js` generated it. A real user using the CLI would not get the HTML report.
+
+**Changes Made:**
+1. Added `writeHtmlWorkflowReport(result)` call to `runCommand` in `src/cli.ts`.
+2. Added `writeHtmlWorkflowReport(result)` call to `validateCommand` in `src/cli.ts`.
+3. Added `writeHtmlWorkflowReport(result)` call to `reportCommand` in `src/cli.ts`.
+4. CLI output now includes `htmlReport=<path>` line.
+
+**Verification:**
+- `cd src && npm run lint` -> PASS
+- `cd src && npm run build` -> PASS
+- `cd src && npm test` -> PASS, 77/77
+- `node src/dist/cli.js run --requirement "..." --run-id html-verify` -> PASS, report.html generated
+- `node src/dist/cli.js report --requirement "..." --run-id report-cmd-test` -> PASS, report.html generated
+- `node src/dist/cli.js validate --requirement "..." --run-id validate-test` -> PASS, report.html generated
+- `node src/dist/demo/run_demo.js` -> PASS
+- `node src/dist/evaluation/run_evaluation.js` -> PASS, 5/5
