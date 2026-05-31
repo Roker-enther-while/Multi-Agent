@@ -88,7 +88,8 @@ header button:hover{background:#475569}
             <option value="plan_only">Plan Only</option>
             <option value="patch_mode">Patch Mode</option>
           </select>
-          <input id="workspaceInput" placeholder="Workspace path (e.g. examples/patch_targets/ts_mini_app)" style="flex:1;background:#1e293b;color:#e2e8f0;border:1px solid #334155;padding:6px 10px;border-radius:6px;font-size:13px;display:none">
+          <input id="workspaceInput" placeholder="Workspace path (e.g. examples/patch_targets/ts_mini_app)" style="flex:1;background:#1e293b;color:#e2e8f0;border:1px solid #334155;padding:6px 10px;border-radius:6px;font-size:13px;display:none" oninput="debounceScan()">
+        <button id="scanBtn" onclick="scanWorkspace()" style="background:#334155;color:#e2e8f0;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:12px;display:none">Scan</button>
         </div>
         <textarea id="requirementInput" rows="2" placeholder="Enter a software requirement..."></textarea>
       </div>
@@ -324,8 +325,43 @@ async function testConnection() {
 
 // Mode selector
 document.getElementById('runMode').addEventListener('change', (e) => {
-  document.getElementById('workspaceInput').style.display = e.target.value === 'patch_mode' ? 'block' : 'none';
+  const isPatch = e.target.value === 'patch_mode';
+  document.getElementById('workspaceInput').style.display = isPatch ? 'block' : 'none';
+  document.getElementById('scanBtn').style.display = isPatch ? 'block' : 'none';
 });
+
+let scanTimeout;
+function debounceScan() {
+  clearTimeout(scanTimeout);
+  scanTimeout = setTimeout(scanWorkspace, 500);
+}
+
+async function scanWorkspace() {
+  const path = document.getElementById('workspaceInput').value.trim();
+  if (!path) return;
+  try {
+    const data = await fetchJSON(`/api/workspace/scan?path=${encodeURIComponent(path)}`);
+    addMessage('system', `<h4>Workspace Scan</h4>
+      <p>Path: ${esc(data.path)}</p>
+      <p>Files: ${data.fileCount}</p>
+      <p>Has package.json: ${data.hasPackageJson ? '✅' : '❌'}</p>
+      <p>Has tsconfig.json: ${data.hasTsConfig ? '✅' : '❌'}</p>
+      <p>Extensions: ${Object.entries(data.extensions).slice(0, 8).map(([k,v]) => `${k}(${v})`).join(', ')}</p>
+    `);
+  } catch (err) {
+    addMessage('system', `<h4>Scan Error</h4><pre>${esc(err.message)}</pre>`);
+  }
+}
+
+// Load recent workspace on startup
+async function loadRecentWorkspace() {
+  try {
+    const data = await fetchJSON('/api/workspace/recent');
+    if (data.path) {
+      document.getElementById('workspaceInput').value = data.path;
+    }
+  } catch {}
+}
 
 // Keyboard shortcut
 document.getElementById('requirementInput').addEventListener('keydown', (e) => {
@@ -334,6 +370,7 @@ document.getElementById('requirementInput').addEventListener('keydown', (e) => {
 
 // Init
 loadRuns();
+loadRecentWorkspace();
 </script>
 </body>
 </html>

@@ -176,6 +176,76 @@ export async function handleRequest(
     }
   }
 
+  // GET /api/workspace/scan?path=...
+  if (method === "GET" && pathname === "/api/workspace/scan") {
+    const workspacePath = urlObj.searchParams.get("path");
+    if (!workspacePath) return json(400, { error: "path parameter required" });
+
+    const resolvedPath = path.resolve(ctx.rootDir, workspacePath);
+    const normalizedRoot = path.resolve(ctx.rootDir);
+    if (!resolvedPath.startsWith(normalizedRoot)) {
+      return json(403, { error: "Path outside project root" });
+    }
+    if (!fs.existsSync(resolvedPath)) {
+      return json(404, { error: "Path not found" });
+    }
+
+    try {
+      const stat = fs.statSync(resolvedPath);
+      if (!stat.isDirectory()) return json(400, { error: "Path is not a directory" });
+
+      const files: string[] = [];
+      const maxFiles = 200;
+      function scanDir(dir: string, rel: string) {
+        if (files.length >= maxFiles) return;
+        const entries = fs.readdirSync(dir, { withFileTypes: true });
+        for (const entry of entries) {
+          if (files.length >= maxFiles) break;
+          if (entry.name.startsWith(".") || entry.name === "node_modules" || entry.name === "dist") continue;
+          const relPath = rel ? `${rel}/${entry.name}` : entry.name;
+          if (entry.isDirectory()) {
+            scanDir(path.join(dir, entry.name), relPath);
+          } else {
+            files.push(relPath);
+          }
+        }
+      }
+      scanDir(resolvedPath, "");
+
+      const exts: Record<string, number> = {};
+      for (const f of files) {
+        const ext = path.extname(f) || "(none)";
+        exts[ext] = (exts[ext] || 0) + 1;
+      }
+
+      // Save as recent workspace
+      const recentPath = path.join(ctx.rootDir, ".recent_workspace");
+      fs.writeFileSync(recentPath, resolvedPath, "utf-8");
+
+      return json(200, {
+        path: resolvedPath,
+        fileCount: files.length,
+        files,
+        extensions: exts,
+        hasPackageJson: files.includes("package.json"),
+        hasTsConfig: files.includes("tsconfig.json"),
+        hasPyprojectToml: files.includes("pyproject.toml"),
+      });
+    } catch (err) {
+      return json(500, { error: "Failed to scan workspace" });
+    }
+  }
+
+  // GET /api/workspace/recent
+  if (method === "GET" && pathname === "/api/workspace/recent") {
+    const recentPath = path.join(ctx.rootDir, ".recent_workspace");
+    if (fs.existsSync(recentPath)) {
+      const saved = fs.readFileSync(recentPath, "utf-8").trim();
+      return json(200, { path: saved });
+    }
+    return json(200, { path: null });
+  }
+
   // POST /api/files/upload
   if (method === "POST" && pathname === "/api/files/upload") {
     if (!body) return json(400, { error: "No file data" });
