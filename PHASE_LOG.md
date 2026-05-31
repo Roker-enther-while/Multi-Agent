@@ -18,6 +18,8 @@
 3. ✅ Initialized new git repository
 4. ✅ Created src/prompts/project_manager.md
 5. ✅ Created src/prompts/projectManagerPrompt.ts
+6. ✅ Created src/prompts/senior_layer.md
+7. ✅ Created src/prompts/seniorLayerPrompt.ts
 
 **Next Steps:**
 6. ⏳ Create src/orchestrator/ scaffold

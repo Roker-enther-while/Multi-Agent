@@ -13,20 +13,28 @@
 ### DONE:
 - Created src/prompts/project_manager.md (full prompt)
 - Created src/prompts/projectManagerPrompt.ts (TypeScript version)
+- Created src/prompts/senior_layer.md (full prompt)
+- Created src/prompts/seniorLayerPrompt.ts (TypeScript version)
 - Initialized git repository with initial commit (127 files)
 
 ### EVIDENCE:
 - Files created:
   - src/prompts/project_manager.md
   - src/prompts/projectManagerPrompt.ts
+  - src/prompts/senior_layer.md
+  - src/prompts/seniorLayerPrompt.ts
 - Commands run:
   - git init
   - git add .
   - git commit -m "Initial commit"
+  - git commit -m "feat: add project manager agent prompt and project state files"
+  - git commit -m "feat: add senior engineering value layer prompt"
 
 ### FILES CHANGED:
 - src/prompts/project_manager.md (new)
 - src/prompts/projectManagerPrompt.ts (new)
+- src/prompts/senior_layer.md (new)
+- src/prompts/seniorLayerPrompt.ts (new)
 
 ### REVIEW:
 - Prompt covers full workflow: requirement → context → spec → task plan → test cases → implementation → verification → review → report
