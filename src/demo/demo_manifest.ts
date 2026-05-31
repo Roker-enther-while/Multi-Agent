@@ -1,5 +1,10 @@
 import type { AgentCoordinatorResult } from "../orchestrator/agent_coordinator";
 import type { ArtifactType } from "../types/artifacts";
+import { validateFinalDone, type FinalDoneValidation } from "../tools/final_done_validator";
+
+export interface DemoManifestOptions {
+  repoRoot?: string;
+}
 
 export interface DemoManifest {
   runId: string;
@@ -24,6 +29,7 @@ export interface DemoManifest {
     codeReviewGenerated: boolean;
     finalReportGenerated: boolean;
   };
+  finalValidation: FinalDoneValidation;
 }
 
 const REQUIRED_ARTIFACTS: ArtifactType[] = [
@@ -37,7 +43,10 @@ const REQUIRED_ARTIFACTS: ArtifactType[] = [
   "final_report",
 ];
 
-export function buildDemoManifest(result: AgentCoordinatorResult): DemoManifest {
+export function buildDemoManifest(
+  result: AgentCoordinatorResult,
+  options: DemoManifestOptions = {}
+): DemoManifest {
   const artifacts = Object.fromEntries(
     result.artifacts.map((artifact) => [artifact.type, artifact.path])
   );
@@ -67,5 +76,6 @@ export function buildDemoManifest(result: AgentCoordinatorResult): DemoManifest 
       codeReviewGenerated: Boolean(artifacts.code_review_report),
       finalReportGenerated: Boolean(artifacts.final_report),
     },
+    finalValidation: validateFinalDone(result, { repoRoot: options.repoRoot }),
   };
 }

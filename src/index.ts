@@ -18,6 +18,7 @@ export * from "./tools/file_reader";
 export * from "./tools/code_inspector";
 export * from "./tools/command_runner";
 export * from "./tools/report_generator";
+export * from "./tools/final_done_validator";
 
 // Prompts
 export * from "./prompts/index";

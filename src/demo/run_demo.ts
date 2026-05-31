@@ -21,7 +21,7 @@ export async function runDemo(requirement: string = DEFAULT_REQUIREMENT): Promis
     ],
   });
 
-  const manifest = buildDemoManifest(result);
+  const manifest = buildDemoManifest(result, { repoRoot: process.cwd() });
   console.log(JSON.stringify(manifest, null, 2));
 }
 

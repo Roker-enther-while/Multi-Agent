@@ -29,6 +29,7 @@ The command prints a JSON manifest with:
 - `verification.allPassed: true`
 - `blockers.count: 0`
 - final done prerequisite flags set to `true`
+- `finalValidation.passed: true`
 
 Artifacts are written to:
 
@@ -45,3 +46,15 @@ Each artifact has a `.meta.json` sidecar for traceability.
 - Verification: `verification_report` records the local smoke command result.
 - Code review: `code_review_report` is generated before final reporting.
 - Reports/logs: `AGENT_REPORT.md`, `PHASE_LOG.md`, and `NEXT_STEP.md` track phase evidence.
+
+## Final Validation Checks
+
+The demo manifest includes `finalValidation.checks`:
+
+- `end_to_end_demo`: workflow status is completed, final report exists, and no unresolved blockers remain.
+- `traceability`: all required artifacts are present, including the traceability report.
+- `verification`: at least one verification command ran and all verification results passed.
+- `code_review`: a code review report exists.
+- `reports_logs`: repository report/log files are present.
+
+If any check fails, inspect the check `evidence` field first. Common causes are a failing verification command, deleted artifacts under `.ai_runs/end-to-end-demo`, or running the demo outside the repository root.

@@ -23,6 +23,7 @@ describe("buildDemoManifest", () => {
       requirement: "Demo requirement",
       runId: "demo",
     });
+    state = { ...state, status: "completed" };
 
     for (const type of REQUIRED_TYPES) {
       state = addArtifact(state, {
@@ -65,5 +66,6 @@ describe("buildDemoManifest", () => {
       codeReviewGenerated: true,
       finalReportGenerated: true,
     });
+    assert.equal(manifest.finalValidation.passed, true);
   });
 });
