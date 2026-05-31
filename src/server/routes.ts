@@ -176,6 +176,49 @@ export async function handleRequest(
     }
   }
 
+  // GET /api/runs/:runId/export
+  const exportMatch = pathname.match(/^\/api\/runs\/([^/]+)\/export$/);
+  if (method === "GET" && exportMatch) {
+    const runId = exportMatch[1];
+    const record = runStore.getRun(runId);
+    if (!record) return json(404, { error: "Run not found" });
+    if (!record.runDir) return json(404, { error: "Run not completed yet" });
+
+    try {
+      const exportData: Record<string, unknown> = {
+        runId: record.runId,
+        requirement: record.requirement,
+        mode: record.mode,
+        status: record.status,
+        createdAt: record.createdAt,
+        finalValidation: record.finalValidation,
+        artifacts: {} as Record<string, string>,
+      };
+
+      for (const artifact of record.artifacts) {
+        try {
+          const content = fs.readFileSync(artifact.path, "utf-8");
+          (exportData.artifacts as Record<string, string>)[artifact.type] = content;
+        } catch {}
+      }
+
+      // Include report.html if exists
+      const reportPath = path.join(record.runDir, "report.html");
+      if (fs.existsSync(reportPath)) {
+        exportData.reportHtml = fs.readFileSync(reportPath, "utf-8");
+      }
+
+      // Include patch result if exists
+      if (record.patchResult) {
+        exportData.patchResult = record.patchResult;
+      }
+
+      return json(200, exportData);
+    } catch {
+      return json(500, { error: "Failed to export run" });
+    }
+  }
+
   // GET /api/runs/:runId/diff
   const diffMatch = pathname.match(/^\/api\/runs\/([^/]+)\/diff$/);
   if (method === "GET" && diffMatch) {

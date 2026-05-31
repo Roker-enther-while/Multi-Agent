@@ -211,6 +211,8 @@ function showDetail(run) {
     html += `<h4>Final Validation</h4><p>${run.finalValidation ? '✅ Passed' : '❌ Failed'}</p>`;
   }
 
+  html += `<h4>Export</h4><p><a href="#" onclick="exportRun('${run.runId}');return false">📦 Download Run Package (JSON)</a></p>`;
+
   content.innerHTML = html;
 }
 
@@ -220,6 +222,17 @@ async function viewArtifact(runId, type) {
   const content = document.getElementById('detailContent');
   panel.classList.remove('hidden');
   content.innerHTML = `<h4>${type}</h4><pre>${esc(data.content)}</pre><p><a href="#" onclick="selectRun('${runId}');return false">← Back to run</a></p>`;
+}
+
+async function exportRun(runId) {
+  const data = await fetchJSON(`/api/runs/${runId}/export`);
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${runId}-export.json`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 async function viewDiff(runId) {
