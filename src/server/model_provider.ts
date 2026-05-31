@@ -1,3 +1,19 @@
+/**
+ * MODEL PROVIDER — Lớp abstraction cho 6 loại LLM provider
+ *
+ * [1] Nguồn tham khảo:
+ *   - Factory Pattern (GoF): createProvider() trả về provider phù hợp
+ *   - Strategy Pattern (GoF): Mỗi provider implement cùng interface
+ *   - OpenAI API (/v1/chat/completions), Anthropic API (/v1/messages), Ollama API (/api/generate)
+ *
+ * [2] Điểm khác biệt:
+ *   - Hỗ trợ 6 providers trong 1 factory (mock, openai, anthropic, gemini, ollama, lmstudio)
+ *   - LMStudioProvider extends OllamaProvider (LM Studio expose Ollama-compatible API)
+ *   - Tất cả dùng native fetch() — không dùng HTTP client library
+ *
+ * [3] Mục tiêu: Hỗ trợ nhiều LLM provider, dễ dàng thêm provider mới
+ */
+
 export type ProviderType = "mock" | "openai_compatible" | "anthropic" | "gemini" | "ollama" | "lmstudio";
 
 export interface ModelConfig {

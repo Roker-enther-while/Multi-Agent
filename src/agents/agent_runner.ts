@@ -1,3 +1,18 @@
+/**
+ * AGENT RUNNER — Dispatcher chọn mock/real/hybrid để chạy agent
+ *
+ * [1] Nguồn tham khảo:
+ *   - Strategy Pattern (GoF): runtime mode selection
+ *   - 12-Factor App: configuration qua environment variables
+ *   - Self-Refine (Madaan et al., 2023): LLM tự sửa output
+ *
+ * [2] Điểm khác biệt:
+ *   - Hybrid mode: mock-first, LLM-refine. Chỉ dùng output LLM nếu dài hơn mock (original heuristic)
+ *   - Fallback chain: real fail → error; hybrid fail → mock (custom resilience)
+ *
+ * [3] Mục tiêu: Hỗ trợ 3 chế độ chạy agent (mock/real/hybrid)
+ */
+
 import type { AgentName, AgentInput, AgentRunResult } from "../types/agents";
 import type { ModelProvider } from "../server/model_provider";
 import { runLlmAgent } from "./llm_agent";
@@ -11,12 +26,24 @@ export interface AgentRunnerConfig {
   modelName: string;
 }
 
+/**
+ * Đọc chế độ thực thi từ env var AGENT_EXECUTION_MODE
+ * [1] Nguồn: 12-Factor App config pattern
+ * [2] Khác biệt: Mặc định "mock" (không cần API key)
+ * [3] Mục tiêu: Xác định agent chạy bằng mock, real LLM, hay hybrid
+ */
 export function getExecutionMode(): ExecutionMode {
   const mode = process.env.AGENT_EXECUTION_MODE || "mock";
   if (mode === "real" || mode === "hybrid") return mode;
   return "mock";
 }
 
+/**
+ * Chạy agent với chế độ đã cấu hình
+ * [1] Nguồn: Strategy Pattern (GoF), Self-Refine pattern
+ * [2] Khác biệt: Hybrid mode — mock-first, LLM-refine gated by output length (original)
+ * [3] Mục tiêu: Dispatch tới mock, real LLM, hoặc hybrid execution
+ */
 export async function runAgentWithMode(
   agentName: AgentName,
   input: AgentInput,

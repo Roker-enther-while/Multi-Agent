@@ -1,3 +1,21 @@
+/**
+ * AGENT COORDINATOR — Bộ điều phối 11 agents chạy tuần tự
+ *
+ * [1] Nguồn tham khảo:
+ *   - Pipeline/Chain Pattern (GoF Design Patterns): Agents chạy tuần tự
+ *   - Saga Pattern (microservices): Coordinator quản lý lifecycle
+ *   - Redux Immutable State: Mọi mutation trả object mới
+ *   - Airflow DAG: Workflow steps có dependencies
+ *
+ * [2] Điểm khác biệt:
+ *   - 11-step pipeline mô phỏng SDLC thật (original)
+ *   - ScopeLock mechanism: định nghĩa scope với "not doing now" (original concept)
+ *   - Blocker handling: agent fail → blocker → workflow halt (custom fail-fast)
+ *   - Context injection: codebase inspection + senior assessment trước mỗi agent
+ *
+ * [3] Mục tiêu: Chạy toàn bộ workflow từ requirement đến final report
+ */
+
 import { randomUUID } from "crypto";
 
 import type { BaseAgent } from "../agents/base_agent";
@@ -56,6 +74,12 @@ const DEFAULT_VERIFICATION_COMMANDS: VerificationCommand[] = [
   },
 ];
 
+/**
+ * Định nghĩa 11 bước workflow chạy tuần tự
+ * [1] Nguồn: Pipeline Pattern (GoF), DAG-based workflow (Airflow)
+ * [2] Khác biệt: 11-step mô phỏng SDLC thật (original). Mỗi step có dependencies.
+ * [3] Mục tiêu: Pipeline từ requirement → context → BA → visual → senior → plan → test → impl → verify → review → traceability → final
+ */
 const WORKFLOW_STEPS: WorkflowAgentStep[] = [
   {
     id: "context-pack",
@@ -147,6 +171,12 @@ export class AgentCoordinator {
     this.agents = options.agents ?? createDefaultMockAgents();
   }
 
+  /**
+   * Chạy toàn bộ 11 agents tuần tự, ghi artifact, xử lý blocker
+   * [1] Nguồn: Orchestrator Pattern (microservices/saga), Immutable State (Redux)
+   * [2] Khác biệt: ScopeLock (original concept), context injection trước mỗi agent, fail-fast blocker
+   * [3] Mục tiêu: Chạy workflow từ requirement đến final report, trả về tất cả artifacts
+   */
   public async run(requirement: string, options: AgentCoordinatorOptions = {}): Promise<AgentCoordinatorResult> {
     const normalizedRequirement = requirement.trim();
     if (!normalizedRequirement) {

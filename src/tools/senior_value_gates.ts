@@ -1,22 +1,37 @@
+/**
+ * SENIOR VALUE GATES — Cổng đánh giá cấp Senior
+ *
+ * [1] Nguồn tham khảo:
+ *   - Cooper's Stage-Gate Model (project management)
+ *   - Balanced Scorecard (Kaplan & Norton, 1992)
+ *
+ * [2] Điểm khác biệt:
+ *   - 7 gates (problem_framing, scope_decision, risk_assessment...) là custom domain constructs (original)
+ *   - 4 scores là hardcoded deterministic values (trong mock mode)
+ *   - Không có tool nào khác có senior value gates
+ *
+ * [3] Mục tiêu: Đánh giá chất lượng workflow ở cấp senior engineer
+ */
+
 export interface SeniorValueGate {
   id:
-    | "problem_framing"
-    | "scope_decision"
-    | "risk_assessment"
-    | "architecture_judgment"
-    | "priority_decision"
-    | "quality_gate"
-    | "handoff";
+    | "problem_framing"      // Hiểu đúng vấn đề?
+    | "scope_decision"      // Phạm vi phù hợp?
+    | "risk_assessment"     // Rủi ro được xác định?
+    | "architecture_judgment" // Kiến trúc phù hợp?
+    | "priority_decision"   // Ưu tiên đúng?
+    | "quality_gate"        // Đạt chất lượng?
+    | "handoff";            // Sẵn sàng giao tiếp?
   title: string;
   decision: string;
   evidence: string;
 }
 
 export interface SeniorValueScores {
-  traceability_score: number;
-  test_readiness_score: number;
-  scope_risk_score: number;
-  architecture_fit_score: number;
+  traceability_score: number;    // Traceability score
+  test_readiness_score: number;  // Test readiness score
+  scope_risk_score: number;      // Scope risk score
+  architecture_fit_score: number; // Architecture fit score
 }
 
 export interface SeniorValueAssessment {

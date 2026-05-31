@@ -1,3 +1,21 @@
+/**
+ * MOCK AGENTS — Các agent deterministic cho workflow DevMIRA
+ *
+ * [1] Nguồn tham khảo:
+ *   - Strategy Pattern (GoF Design Patterns, 1994): Mỗi Mock*Agent là một strategy
+ *   - Factory Function: createDefaultMockAgents() tạo danh sách agent
+ *   - BDD/Agile User Story format: "As a..., I want..., so that..."
+ *   - TypeScript Abstract Class (TypeScript Handbook)
+ *
+ * [2] Điểm khác biệt:
+ *   - analyzeRequirement(): Regex-based classifier phân loại 11 loại requirement (original, không dùng NLP library)
+ *   - findRelevantFiles(): Ánh xạ loại requirement → file liên quan (original)
+ *   - generateTestCases(): Sinh 4 loại test (positive, negative, edge, regression) (original)
+ *   - generateUserStories()/generateAcceptanceCriteria(): Template filling domain-specific
+ *
+ * [3] Mục tiêu: Mô phỏng team BA/Senior/Test/Review qua 11 agents chạy tuần tự
+ */
+
 import { BaseAgent } from "./base_agent";
 import type {
   AgentDecision,
@@ -10,24 +28,49 @@ import type {
 import type { VerificationResult } from "../types/workflow";
 import { buildSeniorValueAssessment, renderSeniorValueAssessment, type SeniorValueAssessment } from "../tools/senior_value_gates";
 
+/**
+ * Cấu trúc kết quả phân tích requirement
+ * [1] Nguồn: TypeScript Interface pattern + Discriminated Union
+ * [2] Khác biệt: 11 loại requirement (endpoint, validation, bug_fix...) là domain-specific
+ * [3] Mục tiêu: Lưu kết quả phân loại requirement để các agent sử dụng
+ */
 interface RequirementAnalysis {
-  raw: string;
+  raw: string;                    // Requirement gốc
   type: "endpoint" | "validation" | "response_change" | "error_handling" | "docs" | "cli_option" | "config" | "test" | "report" | "bug_fix" | "general";
-  subject: string;
-  endpoints: string[];
-  fields: string[];
-  files: string[];
-  actions: string[];
-  constraints: string[];
+  subject: string;                // Chủ đề chính của requirement
+  endpoints: string[];            // Các endpoint HTTP (GET /api/...)
+  fields: string[];               // Các trường dữ liệu (trong dấu ngoặc)
+  files: string[];                // Các file được nhắc đến
+  actions: string[];              // Các động từ hành động (add, create, fix...)
+  constraints: string[];          // Các ràng buộc (must, should, shall...)
 }
 
+/**
+ * Phân loại requirement thành 1 trong 11 loại và trích xuất cấu trúc
+ *
+ * [1] Nguồn tham khảo:
+ *   - Regex pattern matching (NLP cơ bản, không dùng thư viện)
+ *   - Rule-based classification (expert systems thập niên 1980)
+ *   - Thứ tự if-else ưu tiên: kiểm tra "docs" trước vì requirement về docs có thể chứa "endpoint"
+ *
+ * [2] Điểm khác biệt:
+ *   - Hoàn toàn original: dùng regex thuần, không dùng spaCy/NLTK/LLM
+ *   - 11 loại requirement domain-specific (endpoint, validation, bug_fix...)
+ *   - Trích xuất đồng thời: endpoints (HTTP methods), fields (ngoặc), files (đuôi), actions (verbs), constraints (must/should)
+ *
+ * [3] Mục tiêu: Hiểu loại requirement để sinh artifact phù hợp (test plan cho endpoint khác với bug fix)
+ *
+ * @param requirement - Chuỗi requirement văn bản
+ * @returns RequirementAnalysis với type, subject, endpoints, fields, files, actions, constraints
+ */
 function analyzeRequirement(requirement: string): RequirementAnalysis {
   const lower = requirement.toLowerCase();
   const raw = requirement;
 
   let type: RequirementAnalysis["type"] = "general";
-  // Check docs first since it may contain "endpoint" or "api" references
+  // Kiểm tra "docs" trước vì requirement về docs có thể chứa từ "endpoint" hoặc "api"
   if (/update.*doc|documentation|readme|api\.md|curl example/i.test(requirement)) type = "docs";
+  // Kiểm tra HTTP methods hoặc "add endpoint"
   else if (/(?:GET|POST|PUT|DELETE|PATCH)\s+\/\S+/.test(requirement) || /add (?:a |the )?(?:new )?(?:endpoint|route)/i.test(requirement)) type = "endpoint";
   else if (/add.*valid/i.test(requirement)) type = "validation";
   else if (/change|rename|update.*response|field/i.test(requirement)) type = "response_change";
@@ -38,9 +81,11 @@ function analyzeRequirement(requirement: string): RequirementAnalysis {
   else if (/update.*report|metric|histogram|export/i.test(requirement)) type = "report";
   else if (/fix|bug|broken|incorrect/i.test(requirement)) type = "bug_fix";
 
+  // Trích xuất endpoints HTTP (GET /api/..., POST /users...)
   const endpointPattern = /(?:GET|POST|PUT|DELETE|PATCH)\s+[\/\w{}\-]+/gi;
   const endpoints = (requirement.match(endpointPattern) ?? []).map((e) => e.trim());
 
+  // Trích xuất fields trong dấu ngoặc ('name', "email")
   const fieldPattern = /['"](\w+)['"]/g;
   const fields: string[] = [];
   let fieldMatch: RegExpExecArray | null;
@@ -48,21 +93,31 @@ function analyzeRequirement(requirement: string): RequirementAnalysis {
     if (!fields.includes(fieldMatch[1])) fields.push(fieldMatch[1]);
   }
 
+  // Trích xuất file paths (app.ts, config.yaml...)
   const filePattern = /[\w\/]+\.(?:ts|py|md|yaml|json|yml|js|tsx|jsx)/g;
   const files = (requirement.match(filePattern) ?? []);
 
+  // Trích xuất hành động (add, create, fix...)
   const actionVerbs = ["add", "create", "update", "change", "rename", "fix", "remove", "delete", "implement", "validate", "return", "log", "catch"];
   const actions = actionVerbs.filter((verb) => lower.includes(verb));
 
+  // Trích xuất ràng buộc (must be under 50MB, should return...)
   const constraintPattern = /(?:must|should|shall|return|include|support|default)\s+[^.]+/gi;
   const constraints = (requirement.match(constraintPattern) ?? []).map((c) => c.trim());
 
+  // Trích xuất subject chính
   const subjectMatch = requirement.match(/(?:add|create|update|change|rename|fix)\s+(.+?)(?:\.|$)/i);
   const subject = subjectMatch ? subjectMatch[1].trim() : requirement.slice(0, 80);
 
   return { raw, type, subject, endpoints, fields, files, actions, constraints };
 }
 
+/**
+ * Tạo AgentRunResult chuẩn cho mock agent
+ * [1] Nguồn: Factory Helper Pattern + ISO 8601 timestamp
+ * [2] Khác biệt: artifacts=[] vì orchestrator ghi artifact, không phải agent
+ * [3] Mục tiêu: Tạo object kết quả chuẩn hóa cho mọi mock agent
+ */
 function completedResult(
   agent: AgentName,
   report: string,
@@ -73,7 +128,7 @@ function completedResult(
 
   const output: AgentOutput = {
     report,
-    artifacts: [],
+    artifacts: [],  // Orchestrator ghi artifact, không phải agent
     decisions,
     findings,
   };
@@ -95,6 +150,12 @@ function requireText(input: AgentInput, field: "requirement"): string {
   return value;
 }
 
+/**
+ * Agent 1: Context Reader — Phân tích repo, tìm file liên quan
+ * [1] Nguồn: Code inspection pattern (static analysis)
+ * [2] Khác biệt: findRelevantFiles() ánh xạ loại requirement → file pattern (original)
+ * [3] Mục tiêu: Tạo context_pack với requirement analysis + relevant files
+ */
 export class MockContextReaderAgent extends BaseAgent {
   public constructor() {
     super("context_reader");
@@ -142,11 +203,17 @@ export class MockContextReaderAgent extends BaseAgent {
   }
 }
 
+/**
+ * Tìm file liên quan trong repo dựa trên loại requirement
+ * [1] Nguồn: Keyword-based file matching (IR cơ bản), Pattern matching
+ * [2] Khác biệt: Ánh xạ loại requirement → pattern file (endpoint→routes/api, bug_fix→retriever). Original logic.
+ * [3] Mục tiêu: Context pack phải liệt kê file liên quan, không phải tất cả file
+ */
 function findRelevantFiles(analysis: RequirementAnalysis, allFiles: string[]): string[] {
   const relevant: string[] = [];
   const lower = (s: string) => s.toLowerCase();
 
-  // If the requirement explicitly mentions files, include them
+  // Nếu requirement nhắc đến file cụ thể, ưu tiên include
   for (const file of analysis.files) {
     const match = allFiles.find((f) => f.includes(file));
     if (match && !relevant.includes(match)) relevant.push(match);
@@ -201,6 +268,12 @@ function findRelevantFiles(analysis: RequirementAnalysis, allFiles: string[]): s
   return relevant.slice(0, 15);
 }
 
+/**
+ * Agent 5: Planner — Tạo task plan với các bước implementation
+ * [1] Nguồn: Task planning (project management)
+ * [2] Khác biệt: generateTaskSteps() sinh steps theo loại requirement (original)
+ * [3] Mục tiêu: Tạo task_plan.md với các bước cụ thể cho requirement
+ */
 export class MockPlannerAgent extends BaseAgent {
   public constructor() {
     super("planner");
@@ -302,6 +375,12 @@ function generateTaskSteps(analysis: RequirementAnalysis): string[] {
   return steps;
 }
 
+/**
+ * Agent 2: BA Artifact — Tạo user stories, acceptance criteria, API/data drafts
+ * [1] Nguồn: BDD/Agile User Story format (Mike Cohn, 2004)
+ * [2] Khác biệt: Tự động sinh từ requirement text, mỗi loại có template riêng (original)
+ * [3] Mục tiêu: Tạo ba_requirement_package.md theo chuẩn Agile
+ */
 export class MockBAArtifactAgent extends BaseAgent {
   public constructor() {
     super("ba_artifact");
@@ -350,6 +429,12 @@ export class MockBAArtifactAgent extends BaseAgent {
   }
 }
 
+/**
+ * Sinh user stories theo chuẩn Agile từ requirement analysis
+ * [1] Nguồn: User Story format (Mike Cohn, "User Stories Applied", 2004), BDD format
+ * [2] Khác biệt: Tự động sinh từ requirement text (không cần LLM), mỗi loại có template riêng
+ * [3] Mục tiêu: BA artifact phải có user stories theo chuẩn Agile
+ */
 function generateUserStories(analysis: RequirementAnalysis): string[] {
   const stories: string[] = [];
   switch (analysis.type) {
@@ -578,6 +663,12 @@ export class MockSeniorLayerAgent extends BaseAgent {
   }
 }
 
+/**
+ * Agent 6: Test Designer — Sinh test plan 4 loại (positive, negative, edge, regression)
+ * [1] Nguồn: ISTQB Foundation Level, Regression testing (standard practice)
+ * [2] Khác biệt: generateTestCases() tự động sinh 4 loại test từ requirement (original)
+ * [3] Mục tiêu: Tạo test_plan.md đầy đủ, không chỉ happy path
+ */
 export class MockTestDesignerAgent extends BaseAgent {
   public constructor() {
     super("test_designer");
@@ -612,6 +703,13 @@ export class MockTestDesignerAgent extends BaseAgent {
   }
 }
 
+/**
+ * Sinh test plan 4 loại: Positive, Negative, Edge Cases, Regression
+ * [1] Nguồn: ISTQB Foundation Level (test categorization), Regression testing (standard practice)
+ * [2] Khác biệt: Tự động sinh 4 loại test từ requirement analysis, mỗi loại có template riêng
+ *    (endpoint→404/400 tests; validation→boundary tests; bug_fix→reproduction tests)
+ * [3] Mục tiêu: Test plan đầy đủ 4 loại, không chỉ happy path
+ */
 function generateTestCases(analysis: RequirementAnalysis): string[] {
   const cases: string[] = [];
   const scenarios = extractTestScenarios(analysis);
@@ -869,6 +967,13 @@ export class MockImplementationAgent extends BaseAgent {
   }
 }
 
+/**
+ * Sinh hướng dẫn implementation cụ thể theo loại requirement
+ * [1] Nguồn: Implementation checklist (standard software engineering), File naming conventions
+ * [2] Khác biệt: Tự động liệt kê file cần sửa và bước implementation cho từng loại
+ *    (endpoint→route+schema+error; bug_fix→locate→understand→fix→test)
+ * [3] Mục tiêu: Implementation guidance cụ thể đến file level, không chỉ abstract steps
+ */
 function generateImplementationGuidance(analysis: RequirementAnalysis): string[] {
   const guidance: string[] = [];
 
@@ -1096,6 +1201,12 @@ export class MockVerificationAgent extends BaseAgent {
   }
 }
 
+/**
+ * Agent 9: Code Reviewer — Sinh review findings với risk assessment
+ * [1] Nguồn: Code review best practices, OWASP security guidelines
+ * [2] Khác biệt: generateReviewFindings() theo loại requirement + risk assessment (original)
+ * [3] Mục tiêu: Tạo code_review_report.md hữu ích, không chỉ "no changes requested"
+ */
 export class MockCodeReviewerAgent extends BaseAgent {
   public constructor() {
     super("code_reviewer");
@@ -1130,6 +1241,13 @@ export class MockCodeReviewerAgent extends BaseAgent {
   }
 }
 
+/**
+ * Sinh code review findings với risk assessment theo loại requirement
+ * [1] Nguồn: Code review best practices, OWASP security guidelines
+ * [2] Khác biệt: Mỗi loại requirement có checklist riêng + risk assessment domain-specific
+ *    (endpoint→schema validation+error handling; bug_fix→root cause+regression test)
+ * [3] Mục tiêu: Code review hữu ích, không chỉ "no changes requested"
+ */
 function generateReviewFindings(analysis: RequirementAnalysis): string[] {
   const findings: string[] = [];
 

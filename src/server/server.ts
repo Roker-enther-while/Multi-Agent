@@ -1,3 +1,19 @@
+/**
+ * SERVER — HTTP server (không dùng Express/framework)
+ *
+ * [1] Nguồn tham khảo:
+ *   - Node.js HTTP server (Node.js docs): http.createServer()
+ *   - CORS headers (MDN Web Docs)
+ *   - Static file serving (standard web server pattern)
+ *
+ * [2] Điểm khác biệt:
+ *   - Không dùng Express — routing hoàn toàn manual trong routes.ts
+ *   - readBody() tự implement streaming chunks
+ *   - Kết hợp static file serving + API routing trong 1 callback
+ *
+ * [3] Mục tiêu: HTTP server phục vụ Web UI + API cho workflow
+ */
+
 import * as http from "http";
 import * as fs from "fs";
 import * as path from "path";
@@ -12,6 +28,12 @@ const ctx: ApiContext = {
   baseDir: path.resolve(ROOT_DIR, BASE_DIR),
 };
 
+/**
+ * Đọc HTTP request body thành string
+ * [1] Nguồn: Node.js stream pattern
+ * [2] Khác biệt: Tự implement (không dùng body-parser library)
+ * [3] Mục tiêu: Đọc body từ POST requests
+ */
 function readBody(req: http.IncomingMessage): Promise<string | undefined> {
   return new Promise((resolve) => {
     const chunks: Buffer[] = [];
