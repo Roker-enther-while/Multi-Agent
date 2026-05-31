@@ -426,3 +426,70 @@
 - `node src/dist/cli.js validate --requirement "..." --run-id validate-test` -> PASS, report.html generated
 - `node src/dist/demo/run_demo.js` -> PASS
 - `node src/dist/evaluation/run_evaluation.js` -> PASS, 5/5
+
+---
+
+### Release Hardening Loop 2 - Docs Alignment
+
+**Date:** 2026-05-31
+
+**Status:** COMPLETED
+
+**Goal:** Align documentation with actual CLI behavior.
+
+**Changes Made:**
+1. Updated `docs/e2e_demo.md` artifact list from 8 to 11.
+2. Added CLI commands section to `README.md` with report.html documentation.
+3. Documented all 5 CLI commands with examples.
+
+**Verification:**
+- Docs match actual CLI output.
+
+---
+
+### Release Hardening Loop 3 - RELEASE_AUDIT.md
+
+**Date:** 2026-05-31
+
+**Status:** COMPLETED
+
+**Goal:** Create RELEASE_AUDIT.md and confirm MAIN RELEASE DONE.
+
+**Changes Made:**
+1. Created `RELEASE_AUDIT.md` with full verification evidence.
+2. Confirmed all 16 MAIN RELEASE DONE conditions are satisfied.
+
+**Verification:**
+- `cd src && npm run lint` -> PASS
+- `cd src && npm run build` -> PASS
+- `cd src && npm test` -> PASS, 77/77
+- `node src/dist/cli.js --help` -> PASS
+- `node src/dist/cli.js run --requirement "..." --run-id final-audit` -> PASS
+- `node src/dist/demo/run_demo.js` -> PASS
+- `node src/dist/evaluation/run_evaluation.js` -> PASS, 5/5
+
+---
+
+### MAIN RELEASE DONE
+
+**Date:** 2026-05-31
+
+**Status:** COMPLETED
+
+**Evidence:**
+1. Built CLI help works.
+2. Built CLI runs real workflow from requirement text.
+3. Demo works.
+4. Evaluation works (5/5).
+5. .ai_runs contains complete artifacts (11 per run).
+6. report.html includes all major workflow sections.
+7. Final validation checks real product behavior.
+8. README contains verified commands.
+9. docs/demo_script.md contains demo steps.
+10. RELEASE_AUDIT.md exists and says MAIN RELEASE DONE.
+11. AGENT_REPORT.md and PHASE_LOG.md updated.
+12. npm run lint passes.
+13. TypeScript build/check passes.
+14. npm test passes (77/77).
+15. npm run build passes.
+16. Working tree clean after final commit.

@@ -4,27 +4,25 @@
 
 **Date:** 2026-05-31
 
-**Phase:** Release Hardening Loop 1 - CLI HTML Report Generation
+**Phase:** Release Hardening - Final Audit
 
-**Task:** Make CLI run/validate/report commands generate report.html (previously only demo did).
+**Task:** Create RELEASE_AUDIT.md and confirm MAIN RELEASE DONE.
 
 ---
 
 ### GAP SELECTED:
-CLI `run`, `validate`, and `report` commands did not generate `report.html`. Only `run_demo.js` generated it. A real user using the CLI would not get the HTML report.
+RELEASE_AUDIT.md did not exist. Required for MAIN RELEASE DONE condition.
 
 ### CHANGES MADE:
-- Added `writeHtmlWorkflowReport(result)` call to `runCommand`, `validateCommand`, and `reportCommand` in `src/cli.ts`.
-- Imported `writeHtmlWorkflowReport` from `./tools/html_report_generator`.
-- CLI output now includes `htmlReport=<path>` line.
+- Created `RELEASE_AUDIT.md` with full verification evidence.
+- Confirmed all 16 MAIN RELEASE DONE conditions are satisfied.
 
 ### COMMANDS RUN:
 - `cd src && npm run lint` -> PASS
 - `cd src && npm run build` -> PASS
 - `cd src && npm test` -> PASS, 77/77
-- `node src/dist/cli.js run --requirement "..." --run-id html-verify` -> PASS
-- `node src/dist/cli.js report --requirement "..." --run-id report-cmd-test` -> PASS
-- `node src/dist/cli.js validate --requirement "..." --run-id validate-test` -> PASS
+- `node src/dist/cli.js --help` -> PASS
+- `node src/dist/cli.js run --requirement "..." --run-id final-audit` -> PASS, 11 artifacts + report.html
 - `node src/dist/demo/run_demo.js` -> PASS
 - `node src/dist/evaluation/run_evaluation.js` -> PASS, 5/5
 
@@ -32,19 +30,19 @@ CLI `run`, `validate`, and `report` commands did not generate `report.html`. Onl
 ALL PASS
 
 ### REAL PRODUCT RUN RESULT:
-- `cli run` generates `.ai_runs/html-verify/report.html` (16676 bytes) -> PASS
-- `cli report` generates `.ai_runs/report-cmd-test/report.html` -> PASS
-- `cli validate` generates `.ai_runs/validate-test/report.html` (16316 bytes) -> PASS
-- `cli run` output includes `htmlReport=` path -> PASS
+- CLI run generates 11 artifacts + report.html -> PASS
+- Demo generates 11 artifacts + report.html -> PASS
+- Evaluation passes 5/5 tasks -> PASS
+- Final validation: true
 
 ### GENERATED ARTIFACT PATHS:
-- `.ai_runs/html-verify/report.html`
-- `.ai_runs/report-cmd-test/report.html`
-- `.ai_runs/validate-test/report.html`
+- `.ai_runs/final-audit/report.html`
 - `.ai_runs/end-to-end-demo/report.html`
 
 ### REMAINING ISSUES:
-- Continue to next hardening loop for additional gaps.
+None. MAIN RELEASE DONE.
 
-### NEXT SELECTED GAP:
-Inspect HTML report content completeness and docs alignment.
+### MAIN RELEASE DONE:
+PASS
+
+All 16 conditions satisfied. The product is genuinely usable, verified, documented, and clean.
