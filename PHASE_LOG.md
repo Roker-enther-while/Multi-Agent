@@ -650,3 +650,25 @@
 - `cd src && npm run build` -> PASS
 - `cd src && npm test` -> PASS, 77/77
 - `node src/dist/evaluation/run_evaluation.js` -> PASS, 5/5
+
+---
+
+### Advanced Release Roadmap (v1.1–v1.6)
+
+**Date:** 2026-05-31
+
+**Status:** COMPLETED
+
+**Versions:**
+- v1.1: Real LLM execution mode (mock/real/hybrid)
+- v1.2: GitHub PR integration (issue import, PR creation)
+- v1.3: Browser/E2E automation (Playwright optional)
+- v1.4: Team collaboration (comments, approval, decision log)
+- v1.5: Voice/image requirement understanding
+- v1.6: Multi-repo benchmark (3 repos, 12 tasks)
+
+**Verification:**
+- `cd src && npm run lint` -> PASS
+- `cd src && npm run build` -> PASS
+- `cd src && npm test` -> PASS, 77/77
+- `node src/dist/evaluation/run_evaluation.js` -> PASS, 5/5

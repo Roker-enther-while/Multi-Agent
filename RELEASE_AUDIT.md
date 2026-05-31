@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-31
 **Commit:** (pending)
-**Status:** REAL USER RELEASE DONE
+**Status:** ADVANCED RELEASE DONE
 
 ---
 
@@ -191,6 +191,20 @@ All conditions satisfied:
 - POST /api/files/upload
 - GET /api/workspace/scan
 - GET /api/workspace/recent
+
+## ADVANCED RELEASE DONE
+
+All v1.1–v1.6 complete:
+1. ✅ v1.1: Real LLM execution mode (mock/real/hybrid)
+2. ✅ v1.2: GitHub PR integration
+3. ✅ v1.3: Browser/E2E automation
+4. ✅ v1.4: Team collaboration mode
+5. ✅ v1.5: Voice/image requirement understanding
+6. ✅ v1.6: Multi-repo benchmark (3 repos, 12 tasks)
+7. ✅ tests/build pass (77/77, 5/5 evaluation)
+8. ✅ app still runs
+9. ✅ demo still works
+10. ✅ working tree clean
 
 ## FINAL APP DONE
 
