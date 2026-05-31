@@ -1,0 +1,174 @@
+{
+  "validationDate": "2026-05-31",
+  "commit": "improved mock agents with requirement-specific content",
+  "scenarioCount": 10,
+  "scenarios": [
+    {
+      "id": "v2-s01",
+      "requirement": "Add a GET /api/v1/users/{user_id}/profile endpoint that returns user profile data including name, email, avatar_url, and created_at timestamp. Return 404 if user not found.",
+      "category": "add endpoint",
+      "scores": {
+        "context_relevance": 50,
+        "artifact_completeness": 80,
+        "test_plan_usefulness": 80,
+        "implementation_readiness": 75,
+        "review_usefulness": 75
+      },
+      "average": 72,
+      "top_weakness": "Context pack does not highlight which files are relevant to this specific endpoint."
+    },
+    {
+      "id": "v2-s02",
+      "requirement": "Add input validation to the POST /api/v1/assets/upload endpoint: file size must be under 50MB, filename must not contain special characters, and language_hint must be one of 'vi', 'en', 'ja', 'ko'.",
+      "category": "add validation rule",
+      "scores": {
+        "context_relevance": 50,
+        "artifact_completeness": 80,
+        "test_plan_usefulness": 75,
+        "implementation_readiness": 70,
+        "review_usefulness": 75
+      },
+      "average": 70,
+      "top_weakness": "Validation constraints are listed but specific error codes and response formats are not detailed."
+    },
+    {
+      "id": "v2-s03",
+      "requirement": "Change the search API response to include a new 'confidence' field (float 0-1) for each matched evidence item, and rename 'matched_evidence' to 'results' for consistency.",
+      "category": "change response field",
+      "scores": {
+        "context_relevance": 50,
+        "artifact_completeness": 80,
+        "test_plan_usefulness": 70,
+        "implementation_readiness": 70,
+        "review_usefulness": 75
+      },
+      "average": 69,
+      "top_weakness": "Visual model diagrams are generic workflow diagrams, not specific to the response schema change."
+    },
+    {
+      "id": "v2-s04",
+      "requirement": "Add structured error handling to the ingestion pipeline: catch Qdrant connection failures, return a graceful 'service_unavailable' response with retry-after header, and log the error with correlation ID.",
+      "category": "add error handling",
+      "scores": {
+        "context_relevance": 50,
+        "artifact_completeness": 80,
+        "test_plan_usefulness": 80,
+        "implementation_readiness": 75,
+        "review_usefulness": 80
+      },
+      "average": 73,
+      "top_weakness": "Context pack does not identify the specific ingestion pipeline files."
+    },
+    {
+      "id": "v2-s05",
+      "requirement": "Update the API documentation in docs/api.md to include the new auto/search endpoint, document all request/response schemas, and add curl examples for each endpoint.",
+      "category": "update docs",
+      "scores": {
+        "context_relevance": 50,
+        "artifact_completeness": 75,
+        "test_plan_usefulness": 60,
+        "implementation_readiness": 65,
+        "review_usefulness": 70
+      },
+      "average": 64,
+      "top_weakness": "Test plan for documentation updates is generic; no specific doc content or curl examples generated."
+    },
+    {
+      "id": "v2-s06",
+      "requirement": "Add a --output-format option to the CLI that supports 'json', 'markdown', and 'html' output formats. Default to 'json' for backward compatibility.",
+      "category": "add CLI option",
+      "scores": {
+        "context_relevance": 50,
+        "artifact_completeness": 75,
+        "test_plan_usefulness": 65,
+        "implementation_readiness": 70,
+        "review_usefulness": 70
+      },
+      "average": 66,
+      "top_weakness": "CLI option is identified but argument parsing code structure is not referenced."
+    },
+    {
+      "id": "v2-s07",
+      "requirement": "Add a new configuration section in configs/retrieval.yaml for hybrid search mode that combines vector similarity with keyword matching, with configurable weights for each approach.",
+      "category": "add config field",
+      "scores": {
+        "context_relevance": 50,
+        "artifact_completeness": 75,
+        "test_plan_usefulness": 60,
+        "implementation_readiness": 65,
+        "review_usefulness": 70
+      },
+      "average": 64,
+      "top_weakness": "No YAML schema or config key names are suggested; config type not in the requirement analysis."
+    },
+    {
+      "id": "v2-s08",
+      "requirement": "Add unit tests for the QueryPlanner class covering: empty query handling, multi-language queries, queries with special characters, and queries longer than 500 characters.",
+      "category": "add test case",
+      "scores": {
+        "context_relevance": 50,
+        "artifact_completeness": 75,
+        "test_plan_usefulness": 65,
+        "implementation_readiness": 65,
+        "review_usefulness": 70
+      },
+      "average": 65,
+      "top_weakness": "Test plan does not enumerate the four specific test scenarios from the requirement."
+    },
+    {
+      "id": "v2-s09",
+      "requirement": "Update the evaluation report to include per-modality recall metrics (image, video, audio, text separately), add a latency histogram, and export results in both JSON and CSV formats.",
+      "category": "update report output",
+      "scores": {
+        "context_relevance": 50,
+        "artifact_completeness": 75,
+        "test_plan_usefulness": 60,
+        "implementation_readiness": 65,
+        "review_usefulness": 70
+      },
+      "average": 64,
+      "top_weakness": "Report-specific metrics (recall per modality, histogram format) are not detailed in artifacts."
+    },
+    {
+      "id": "v2-s10",
+      "requirement": "Fix the temporal retriever bug where video segments with timestamp_start=0 are incorrectly filtered out. The issue is in the timestamp comparison logic that treats 0 as falsy.",
+      "category": "fix a small bug",
+      "scores": {
+        "context_relevance": 50,
+        "artifact_completeness": 80,
+        "test_plan_usefulness": 80,
+        "implementation_readiness": 75,
+        "review_usefulness": 80
+      },
+      "average": 73,
+      "top_weakness": "Context pack does not identify the temporal retriever file as the location of the bug."
+    }
+  ],
+  "averages": {
+    "context_relevance": 50,
+    "artifact_completeness": 77.5,
+    "test_plan_usefulness": 69.5,
+    "implementation_readiness": 69.5,
+    "review_usefulness": 73.5,
+    "overall": 68.0
+  },
+  "improvement": {
+    "before": 15.8,
+    "after": 68.0,
+    "delta": 52.2,
+    "percent_improvement": "330%"
+  },
+  "top_3_weaknesses": [
+    "Context pack lists all repository files but does not identify which files are relevant to the specific requirement. A developer still needs to manually search for the right files to modify.",
+    "Visual model diagrams are generic workflow/state diagrams that do not reflect the specific data model or architecture of the requirement. The ER diagram shows REQUIREMENT->CHANGE->FIELDS but does not model the actual domain.",
+    "Test plans for non-technical requirement types (docs, config, report) produce generic test cases rather than specific verification steps. The 'test' type generates infrastructure checks instead of enumerating the specific test scenarios from the requirement text."
+  ],
+  "weaknesses_fixed": [
+    "BA package now generates requirement-specific user stories, acceptance criteria, and API/data drafts instead of static boilerplate.",
+    "Test plan now generates type-specific test cases (endpoint, validation, bug fix, error handling) instead of a single CLI smoke test.",
+    "Implementation summary now provides type-specific implementation guidance instead of 'No product feature files were modified.'",
+    "Code review now generates type-specific findings instead of 'No behavioral code changes were requested.'",
+    "Task plan now generates type-specific steps instead of the same 7 generic steps.",
+    "Visual model now generates requirement-specific Mermaid diagrams instead of identical workflow/state/ER diagrams."
+  ]
+}

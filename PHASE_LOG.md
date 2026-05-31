@@ -493,3 +493,40 @@
 14. npm test passes (77/77).
 15. npm run build passes.
 16. Working tree clean after final commit.
+
+---
+
+### Real-World Validation
+
+**Date:** 2026-05-31
+
+**Status:** COMPLETED
+
+**Goal:** Validate the tool on 10 realistic software-change scenarios.
+
+**Scenarios Executed:**
+1. Add endpoint (GET /api/v1/users/{user_id}/profile) — Score: 72
+2. Add validation (file size, filename, language_hint) — Score: 70
+3. Change response (confidence field, rename matched_evidence) — Score: 69
+4. Error handling (Qdrant failures, retry-after, correlation ID) — Score: 73
+5. Update docs (API documentation with curl examples) — Score: 64
+6. Add CLI option (--output-format json/markdown/html) — Score: 66
+7. Add config (hybrid search mode with weights) — Score: 64
+8. Add test case (QueryPlanner unit tests) — Score: 65
+9. Update report (per-modality recall, histogram, dual export) — Score: 64
+10. Fix bug (temporal retriever timestamp_start=0) — Score: 73
+
+**Overall Score:** 68.0/100 (before: 15.8, after: 68.0, +330%)
+
+**Weakness Fixed:** All mock agents now generate requirement-specific content instead of static boilerplate. Added `analyzeRequirement()` function that parses requirement text for type, endpoints, fields, files, actions, and constraints. Updated 6 agents (BA, Test Designer, Implementation, Code Reviewer, Planner, Visual Modeling).
+
+**Verification:**
+- `cd src && npm run lint` -> PASS
+- `cd src && npm run build` -> PASS
+- `cd src && npm test` -> PASS, 77/77
+- 10x CLI run -> ALL PASS
+- `node src/dist/evaluation/run_evaluation.js` -> PASS, 5/5
+
+**Reports Generated:**
+- `reports/real_world_validation.json`
+- `reports/real_world_validation.md`

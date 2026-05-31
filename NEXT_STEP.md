@@ -1,19 +1,17 @@
 # NEXT STEP
 
-## Mini-Phase: Align docs with actual CLI behavior
+## Real-World Validation: Fix Highest-Impact Weakness
 
-**Problem:**
-1. `docs/e2e_demo.md` lists 8 artifacts but demo now produces 11 (added ba_requirement_package, visual_model_package, senior_review).
-2. README does not document that `cli run` generates `report.html`.
-3. README does not document `report` or `validate` CLI commands.
+**Validation Score:** 15.8/100 (target: >= 80%)
 
-**Improvement:** Update docs/e2e_demo.md artifact list. Update README to document all CLI commands and their outputs including report.html.
+**Top 3 Weaknesses:**
+1. All artifacts except context pack are static boilerplate templates identical across all scenarios
+2. Test plan is completely non-functional (just a CLI smoke test)
+3. Code review and implementation summary actively contradict requirements
+
+**Fix Selected:** Make mock agents generate requirement-specific content by parsing the requirement text for key elements (endpoints, fields, validation rules, error handling, etc.) and incorporating them into artifact content.
 
 **Files likely affected:**
-- `docs/e2e_demo.md` — fix artifact list
-- `README.md` — add CLI commands section with report.html output
+- `src/agents/mock_agents.ts` — all agent execute() methods
 
-**Verification commands:**
-- Review docs match actual CLI output
-
-**Done condition:** docs/e2e_demo.md lists all 11 artifacts. README documents cli run/validate/report with report.html output.
+**Verification:** Run 10 scenarios, rescore, verify tests pass.

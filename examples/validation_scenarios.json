@@ -1,0 +1,52 @@
+[
+  {
+    "id": "scenario-01-add-endpoint",
+    "requirement": "Add a GET /api/v1/users/{user_id}/profile endpoint that returns user profile data including name, email, avatar_url, and created_at timestamp. Return 404 if user not found.",
+    "category": "add endpoint"
+  },
+  {
+    "id": "scenario-02-add-validation",
+    "requirement": "Add input validation to the POST /api/v1/assets/upload endpoint: file size must be under 50MB, filename must not contain special characters, and language_hint must be one of 'vi', 'en', 'ja', 'ko'.",
+    "category": "add validation rule"
+  },
+  {
+    "id": "scenario-03-change-response",
+    "requirement": "Change the search API response to include a new 'confidence' field (float 0-1) for each matched evidence item, and rename 'matched_evidence' to 'results' for consistency.",
+    "category": "change response field"
+  },
+  {
+    "id": "scenario-04-add-error-handling",
+    "requirement": "Add structured error handling to the ingestion pipeline: catch Qdrant connection failures, return a graceful 'service_unavailable' response with retry-after header, and log the error with correlation ID.",
+    "category": "add error handling"
+  },
+  {
+    "id": "scenario-05-update-docs",
+    "requirement": "Update the API documentation in docs/api.md to include the new auto/search endpoint, document all request/response schemas, and add curl examples for each endpoint.",
+    "category": "update docs"
+  },
+  {
+    "id": "scenario-06-add-cli-option",
+    "requirement": "Add a --output-format option to the CLI that supports 'json', 'markdown', and 'html' output formats. Default to 'json' for backward compatibility.",
+    "category": "add CLI option"
+  },
+  {
+    "id": "scenario-07-add-config",
+    "requirement": "Add a new configuration section in configs/retrieval.yaml for hybrid search mode that combines vector similarity with keyword matching, with configurable weights for each approach.",
+    "category": "add config field"
+  },
+  {
+    "id": "scenario-08-add-test",
+    "requirement": "Add unit tests for the QueryPlanner class covering: empty query handling, multi-language queries, queries with special characters, and queries longer than 500 characters.",
+    "category": "add test case"
+  },
+  {
+    "id": "scenario-09-update-report",
+    "requirement": "Update the evaluation report to include per-modality recall metrics (image, video, audio, text separately), add a latency histogram, and export results in both JSON and CSV formats.",
+    "category": "update report output"
+  },
+  {
+    "id": "scenario-10-fix-bug",
+    "requirement": "Fix the temporal retriever bug where video segments with timestamp_start=0 are incorrectly filtered out. The issue is in the timestamp comparison logic that treats 0 as falsy.",
+    "category": "fix a small bug"
+  }
+]
