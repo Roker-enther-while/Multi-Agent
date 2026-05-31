@@ -312,10 +312,31 @@ export async function handleRequest(
       const parsed = JSON.parse(body);
       const { filename, content } = parsed as { filename?: string; content?: string };
       if (!filename || !content) return json(400, { error: "filename and content required" });
+
+      // Size limit: 1MB
+      if (content.length > 1024 * 1024) {
+        return json(413, { error: "File too large (max 1MB)" });
+      }
+
+      // Allowed file types
+      const allowedExts = [".txt", ".md", ".json", ".csv", ".ts", ".js", ".py", ".yaml", ".yml", ".toml", ".cfg", ".ini"];
+      const ext = path.extname(filename).toLowerCase();
+      if (ext && !allowedExts.includes(ext)) {
+        return json(415, { error: `File type ${ext} not allowed. Allowed: ${allowedExts.join(", ")}` });
+      }
+
       const uploadDir = path.join(ctx.rootDir, "data", "uploads");
       fs.mkdirSync(uploadDir, { recursive: true });
       const safeName = filename.replace(/[^a-zA-Z0-9._-]/g, "_");
       const filePath = path.join(uploadDir, safeName);
+
+      // Path guard: ensure resolved path is within upload dir
+      const normalizedUpload = path.resolve(uploadDir);
+      const normalizedFile = path.resolve(filePath);
+      if (!normalizedFile.startsWith(normalizedUpload)) {
+        return json(403, { error: "Path traversal detected" });
+      }
+
       fs.writeFileSync(filePath, content, "utf-8");
       return json(200, { ok: true, path: filePath });
     } catch {
