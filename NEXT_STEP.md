@@ -1,17 +1,23 @@
 # NEXT STEP
 
-## Real-World Validation: Fix Highest-Impact Weakness
+## Phase A — Backend API
 
-**Validation Score:** 15.8/100 (target: >= 80%)
+**Goal:** Create API around existing workflow engine.
 
-**Top 3 Weaknesses:**
-1. All artifacts except context pack are static boilerplate templates identical across all scenarios
-2. Test plan is completely non-functional (just a CLI smoke test)
-3. Code review and implementation summary actively contradict requirements
+**Endpoints:**
+- GET /api/health
+- GET /api/settings
+- POST /api/settings
+- POST /api/runs
+- GET /api/runs/:runId
+- GET /api/runs/:runId/artifacts
+- GET /api/runs/:runId/artifacts/:artifactName
+- GET /api/runs/:runId/report
+- POST /api/files/upload
 
-**Fix Selected:** Make mock agents generate requirement-specific content by parsing the requirement text for key elements (endpoints, fields, validation rules, error handling, etc.) and incorporating them into artifact content.
+**Files to create:**
+- `src/server/server.ts` — HTTP server with routing
+- `src/server/routes.ts` — API route handlers
+- `src/server/run_store.ts` — Run state management
 
-**Files likely affected:**
-- `src/agents/mock_agents.ts` — all agent execute() methods
-
-**Verification:** Run 10 scenarios, rescore, verify tests pass.
+**Verification:** Server starts, API responds, workflow runs from API.
